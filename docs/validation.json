@@ -1,0 +1,112 @@
+{
+  "status": "PASS",
+  "validated_at": "2026-10-19T06:00:42.013341+00:00",
+  "comfyui_commit": "8f04fd6ecf4a548937971e840af2a985529fab76",
+  "environment": {
+    "project_version": "0.1.0",
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.10.0",
+      "pytest": "9.0.2",
+      "safetensors": "0.7.0",
+      "comfy-kitchen": "0.2.39",
+      "comfy-aimdo": "0.5.6",
+      "ruff": "0.14.4",
+      "mypy": "1.18.2"
+    },
+    "cpu_probe": {
+      "status": "PASS",
+      "device": "cpu",
+      "cuda_available": false,
+      "cuda_initialized_at_start": false,
+      "torch_runtime": "2.10.0+cpu",
+      "cuda_initialized_at_end": false
+    }
+  },
+  "stages": [
+    {
+      "name": "syntax",
+      "status": "PASS",
+      "checked_files": 26,
+      "checks": [
+        "ast.parse",
+        "compile"
+      ]
+    },
+    {
+      "name": "ruff",
+      "status": "PASS"
+    },
+    {
+      "name": "mypy",
+      "status": "PASS"
+    },
+    {
+      "name": "unit",
+      "status": "PASS",
+      "counts": {
+        "tests": 115,
+        "passed": 115,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "integration",
+      "status": "PASS",
+      "counts": {
+        "tests": 18,
+        "passed": 18,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "cpu_boundary",
+      "status": "PASS",
+      "reason": "CPU-only validation did not initialize CUDA"
+    },
+    {
+      "name": "source_integrity",
+      "status": "PASS",
+      "reason": "Source snapshot unchanged"
+    }
+  ],
+  "source_sha256": {
+    "__init__.py": "6a408ed878e42478b98384ef878f4ccc9830aefa04140579e233c398c2c3392e",
+    "moss_slider_node/__init__.py": "1d809c8a18bd467797d46b0b19cc193361c0d241dc034eb0731fc2a1a49e2957",
+    "moss_slider_node/checkpoint.py": "84446a9efe95d8d8afefc4803cf8c2651caeef1292637f878a7133e350b65d25",
+    "moss_slider_node/export.py": "e2f57cc7bac401f23754466d612c75105a82b24c24b8cf777aae33a53ebab63e",
+    "moss_slider_node/inference.py": "4a1d078059439945a5bc05ab342a42c2b17b76a0aca721094d865a2a6914502b",
+    "moss_slider_node/job.py": "8552902136708d9de0e383ae6222550506c14f632db29a109e8ce412b18dc15b",
+    "moss_slider_node/lora.py": "9e6df9761d2bb60bd724ef59af0496e88f0aa019cfe22947b3ed6c209cab8551",
+    "moss_slider_node/model_adapter.py": "cf564babf0b6517b4ca1a727958d1ec2875c9d9ee7c6777dbd25e55e43014aae",
+    "moss_slider_node/quantization.py": "e95bf75af9c06b8964e3375b49f57679f35a36bd87a763d2ed0ba18f3178ad5e",
+    "moss_slider_node/training.py": "9c42a8591c9a288d6a7f0d5e0193fdc7802fb8740330c0057b093d0e1f0b8131",
+    "nodes.py": "18d239bb235e7632ce1c325aa85ba381c0aff9c08f95c3c7dae1c5fd14cf12d8",
+    "tests/conftest.py": "1f3a1ce38f3e1362de9146451d2189e537f5dd81b7f3be719b1c56e657cc67ca",
+    "tests/integration/conftest.py": "119b06838ccfd83990ede3b45ffecc038712e5bbd5ea7dc69f4af4beaadd53b8",
+    "tests/integration/test_inference.py": "1859ada4292e3511b78dece350eae89e1272e9a5fcad8eec6a5f7ed7e1ad5048",
+    "tests/integration/test_job.py": "665ba46cadadd5a5ee92b18051ced54eb217a934772e88168da4db2f5e7de7d6",
+    "tests/integration/test_native_model.py": "d6373d746ab579257ac91333a1accfa4ba7d98c299a66ff4e5c9f53d124b0909",
+    "tests/integration/test_nodes.py": "3edec736ef6325364fcc259fc00e4271d9a36b6547a7cf6bf32592bb90e70912",
+    "tests/unit/test_checkpoint.py": "56a9801dda3256d1c3dcee9599b7f0f138c3bbe659e857ea73507db69fadcb0a",
+    "tests/unit/test_conditioning.py": "718be570f8e35bfb5c5fab7698335c91886eebafc2937655b820ee4320cb2dd6",
+    "tests/unit/test_export.py": "893699d5ba3c09987d43ddd4c6595c7777be12c4e5d0ae7446007ac9ece00759",
+    "tests/unit/test_inspect_cli.py": "c7ecc4e0ac18b2cbc0e95be920844fedf6e62cff18382cc69f82f883433258eb",
+    "tests/unit/test_lora.py": "b9f15019e91e1dd75d3532897f125a82cf6dd079e64b333b93e882caf64e230a",
+    "tests/unit/test_quantization.py": "bb95d1589733196c889131d55fe85f651de0b04240f446df9f1b585e83c5d5da",
+    "tests/unit/test_training.py": "0902c5253be7ffc0962bbc343da7682a47650bd95b64207a31c5efc70b4084ed",
+    "tools/inspect_checkpoint.py": "d6a97b1906de0f003d725a06b5be15cf007d99837c8695b17ad024d8d888ff12",
+    "tools/run_cpu_validation.py": "458356dbb1a7717eb52cdaddaf936188ff0db4d0554c1a861edc48d7c96b0786"
+  },
+  "source_hash_scope": "Exact working-tree bytes used by validation; Git checkout line endings may differ.",
+  "gpu_validation": {
+    "status": "NOT_RUN",
+    "reason": "P8 GPU and full-model validation is outside this runner"
+  },
+  "reproduce": "python tools/run_cpu_validation.py --comfyui-root /path/to/ComfyUI --report test-results/cpu-validation.json"
+}

@@ -1,0 +1,134 @@
+{
+  "artifact": "CPU-only synthetic analysis fixture; not product code",
+  "passed": true,
+  "seed": 20261019,
+  "versions": {
+    "python": "3.10.11",
+    "torch": "2.10.0+cpu",
+    "comfy_kitchen": "0.2.39"
+  },
+  "backend": "comfy_kitchen eager on CPU",
+  "cuda_initialized_before": false,
+  "cuda_initialized_after": false,
+  "activation_path_distinction": {
+    "comfy_kitchen": "groupwise Hadamard rotation followed by dynamic per-row INT8 activation quantization",
+    "krea": "groupwise Hadamard rotation of floating activation followed by floating matmul"
+  },
+  "cases": [
+    {
+      "shape": {
+        "out_features": 8,
+        "in_features": 256,
+        "batch": 3,
+        "group_size": 256
+      },
+      "helper_exact": {
+        "hadamard": true,
+        "weight_rotation": true,
+        "activation_rotation": true
+      },
+      "helper_error": {
+        "hadamard": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "allclose_rtol_1e-5_atol_1e-5": true
+        },
+        "weight_rotation": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "allclose_rtol_1e-5_atol_1e-5": true
+        },
+        "activation_rotation": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "allclose_rtol_1e-5_atol_1e-5": true
+        }
+      },
+      "comfy_kitchen_dequant_vs_independent_unrotated_weight": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      },
+      "comfy_kitchen_dynamic_int8_forward_vs_independent_int8_reference": {
+        "max_abs": 1.9073486328125e-06,
+        "mean_abs": 2.8063854529136734e-07,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      },
+      "comfy_kitchen_input_grad_vs_frozen_weight_reference": {
+        "max_abs": 2.86102294921875e-06,
+        "mean_abs": 4.42943331790957e-07,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      },
+      "krea_float_activation_forward_vs_independent_float_reference": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      },
+      "krea_input_grad_vs_frozen_weight_reference": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      }
+    },
+    {
+      "shape": {
+        "out_features": 8,
+        "in_features": 512,
+        "batch": 3,
+        "group_size": 256
+      },
+      "helper_exact": {
+        "hadamard": true,
+        "weight_rotation": true,
+        "activation_rotation": true
+      },
+      "helper_error": {
+        "hadamard": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "allclose_rtol_1e-5_atol_1e-5": true
+        },
+        "weight_rotation": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "allclose_rtol_1e-5_atol_1e-5": true
+        },
+        "activation_rotation": {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "allclose_rtol_1e-5_atol_1e-5": true
+        }
+      },
+      "comfy_kitchen_dequant_vs_independent_unrotated_weight": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      },
+      "comfy_kitchen_dynamic_int8_forward_vs_independent_int8_reference": {
+        "max_abs": 1.9073486328125e-06,
+        "mean_abs": 3.377596442533104e-07,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      },
+      "comfy_kitchen_input_grad_vs_frozen_weight_reference": {
+        "max_abs": 4.291534423828125e-06,
+        "mean_abs": 5.761260695180681e-07,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      },
+      "krea_float_activation_forward_vs_independent_float_reference": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      },
+      "krea_input_grad_vs_frozen_weight_reference": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "allclose_rtol_1e-5_atol_1e-5": true
+      }
+    }
+  ],
+  "unverified": [
+    "CUDA backend numerical equivalence",
+    "Triton backend numerical equivalence",
+    "full-model and real-checkpoint execution"
+  ]
+}

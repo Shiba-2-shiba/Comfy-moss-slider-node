@@ -1,0 +1,156 @@
+import json
+
+import pytest
+import torch
+
+from moss_slider_node.checkpoint import file_sha256, load_training_model
+from moss_slider_node.export import save_lora
+from moss_slider_node.inference import apply_slider, pack_logical_lora
+from moss_slider_node.lora import inject_lora, lora_parameters, lora_state_dict
+from moss_slider_node.model_adapter import create_native_model, training_context
+
+
+def wrap_native(model, config, path):
+    import comfy.model_base
+    import comfy.model_patcher
+    import comfy.sd
+    import comfy.supported_models
+
+    settings = {**vars(config), "image_model": "moss_image", "fused_qkv": True}
+    model_config = comfy.supported_models.MOSSImage(settings)
+    model_config.set_inference_dtype(torch.float32, None)
+    base = comfy.model_base.MOSSImage(model_config, device="meta")
+    base.diffusion_model = model
+    patcher = comfy.model_patcher.ModelPatcher(base, load_device=torch.device("cpu"), offload_device=torch.device("cpu"))
+    patcher.cached_patcher_init = (comfy.sd.load_diffusion_model, (str(path), {}))
+    return patcher
+
+
+def test_full_42_block_export_uses_comfy_standard_slice_mapping():
+    import comfy.lora
+    from moss_slider_node.checkpoint import MossConfig
+
+    config = MossConfig()
+    native = create_native_model(config, dtype=torch.float32)
+    inject_lora(native, rank=1, alpha=1, device="cpu")
+    state = lora_state_dict(native)
+    assert len(state) == 756
+    # Mapping needs the unwrapped native parameter names, so construct a second meta-only model.
+    base = wrap_native(create_native_model(config, dtype=torch.float32), config, "unused-meta-only-path")
+    mapping = comfy.lora.model_lora_keys_unet(base.model)
+    loaded = comfy.lora.load_lora(state, mapping)
+    assert len(loaded) == 252
+    assert sum(isinstance(key, tuple) for key in loaded) == 126
+
+
+def test_packed_bypass_matches_training_lora_and_leaves_base_unchanged(native_checkpoint, tmp_path):
+    path, config, _ = native_checkpoint
+    training, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+    inject_lora(training, rank=2, alpha=3)
+    with torch.no_grad():
+        for p in lora_parameters(training):
+            p.normal_(0, 0.01)
+    lora, _ = save_lora(training, tmp_path, "slider", {"source": {"sha256": file_sha256(path)}})
+    inference, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+    patcher = wrap_native(inference, config, path)
+    snapshots = {name: b.clone() for name, b in inference.named_buffers()}
+    original_forward = inference.layers[0].proj["qkv"].forward
+    x, c, sigma = torch.randn(1, 128, 1, 2), torch.randn(1, 3, 4096), torch.tensor([0.4])
+    from moss_slider_node.lora import lora_multiplier
+
+    for strength in [0.0, -1.0, 1.0]:
+        with lora_multiplier(training, strength), training_context(training):
+            expected = training(x, sigma, c)
+        applied = apply_slider(patcher, lora, strength)
+        try:
+            applied.inject_model()
+            with training_context(inference):
+                actual = inference(x, sigma, c)
+            torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-4)
+        finally:
+            applied.eject_model()
+        for name, b in inference.named_buffers():
+            torch.testing.assert_close(b, snapshots[name], rtol=0, atol=0)
+        assert inference.layers[0].proj["qkv"].forward == original_forward
+        assert patcher.injections == {} and patcher.patches == {}
+
+
+def test_apply_rejects_wrong_base_identity_and_independent_qkv_a(native_checkpoint, tmp_path):
+    path, config, _ = native_checkpoint
+    native, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+    inject_lora(native, rank=2, alpha=2)
+    state = lora_state_dict(native)
+    state["lora_unet_layers_0_proj_q.lora_down.weight"][0, 0] += 1
+    with pytest.raises(ValueError, match="shared|common"):
+        pack_logical_lora(state)
+    lora, manifest = save_lora(native, tmp_path, "badbase", {"source": {"sha256": "0" * 64}})
+    other, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+    patcher = wrap_native(other, config, path)
+    with pytest.raises(ValueError, match="identity|checkpoint"):
+        apply_slider(patcher, lora, 1)
+    data = json.loads(manifest.read_text())
+    assert data["source"]["sha256"] == "0" * 64
+
+
+def test_apply_rejects_mismatched_manifest_lora_pair(native_checkpoint, tmp_path):
+    path, config, _ = native_checkpoint
+    native, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+    inject_lora(native, rank=2, alpha=0.1)
+    manifest = {"source": {"sha256": file_sha256(path)}}
+    first, first_json = save_lora(native, tmp_path, "first", manifest)
+    with torch.no_grad():
+        lora_parameters(native)[0].add_(1)
+    second, second_json = save_lora(native, tmp_path, "second", manifest)
+    # A plausible filename on copied JSON must still fail the byte digest binding.
+    mismatched = json.loads(first_json.read_text())
+    mismatched["lora_file"] = second.name
+    second_json.write_text(json.dumps(mismatched))
+    inference, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+    with pytest.raises(ValueError, match="digest|artifact|pair"):
+        apply_slider(wrap_native(inference, config, path), second, 1)
+
+
+def test_actual_comfy_quantized_ffn_keeps_bypass_with_fused_activation(native_checkpoint, tmp_path):
+    import comfy.model_management as management
+    import comfy.ops
+    from comfy.ldm.moss_image.model import MOSSImage
+    from comfy_kitchen.tensor import QuantizedTensor
+    from safetensors.torch import load_file
+
+    path, config, _ = native_checkpoint
+    trained, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+    inject_lora(trained, rank=2, alpha=0.1)
+    with torch.no_grad():
+        for parameter in lora_parameters(trained):
+            parameter.normal_(0, 0.02)
+    lora, _ = save_lora(trained, tmp_path, "actual_quant", {"source": {"sha256": file_sha256(path)}})
+    native = MOSSImage(**vars(config), fused_qkv=True, dtype=torch.float32, device="cpu",
+                       operations=comfy.ops.mixed_precision_ops({}, compute_dtype=torch.float32))
+    state = load_file(path)
+    state.pop("rope.bands")
+    native.load_state_dict(state, strict=True)
+    native.requires_grad_(False)
+    down = native.layers[0].proj["ffn_down"]
+    assert isinstance(down.weight, QuantizedTensor)
+    codes = down.weight._qdata.clone()
+    patcher = wrap_native(native, config, path)
+    hidden = torch.randn(1, 3, config.ffn_dim * 2)
+    h, gate = hidden.chunk(2, dim=-1)
+    activated = (4 * torch.tanh(gate / 4) * torch.sigmoid(gate)) * (25 * torch.tanh(h / 25))
+    assert not management.in_training
+    base = down(activated)
+    trained_down = trained.layers[0].proj["ffn_down"]
+    delta = torch.nn.functional.linear(
+        torch.nn.functional.linear(activated, trained_down.lora_A), trained_down.lora_B
+    ) * trained_down.scaling
+    for strength in [-1.0, 1.0]:
+        applied = apply_slider(patcher, lora, strength)
+        try:
+            applied.inject_model()
+            assert down.comfy_force_forward
+            actual = comfy.ops.linear_input_act(down, hidden, "situ")
+            torch.testing.assert_close(actual, base + strength * delta, atol=1e-5, rtol=1e-4)
+        finally:
+            applied.eject_model()
+        assert not down.comfy_force_forward
+        assert torch.equal(down.weight._qdata, codes)

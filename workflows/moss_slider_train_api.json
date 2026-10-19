@@ -1,0 +1,39 @@
+{
+  "1": {
+    "class_type": "CLIPLoader",
+    "inputs": {"clip_name": "qwen3.5_9b_int8_convrot.safetensors", "type": "moss_image", "device": "default"}
+  },
+  "2": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {"clip": ["1", 0], "text": "portrait of an adult person"}
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {"clip": ["1", 0], "text": "portrait of an elderly adult person"}
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {"clip": ["1", 0], "text": "portrait of a young adult person"}
+  },
+  "5": {
+    "class_type": "MossSliderTrain",
+    "inputs": {
+      "checkpoint_name": "moss_image_sft_int8_convrot.safetensors",
+      "target_conditioning": ["2", 0],
+      "positive_conditioning": ["3", 0],
+      "negative_conditioning": ["4", 0],
+      "steps": 1,
+      "rank": 2,
+      "alpha": 2.0,
+      "learning_rate": 0.0001,
+      "eta": 1.0,
+      "seed": 0,
+      "width": 256,
+      "height": 256,
+      "rollout_steps": 4,
+      "gradient_checkpointing": true,
+      "blocks_to_swap": 0,
+      "output_prefix": "moss_slider_smoke"
+    }
+  }
+}

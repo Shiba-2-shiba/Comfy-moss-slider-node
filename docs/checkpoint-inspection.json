@@ -1,0 +1,151 @@
+{
+  "status": "SUPPORTED",
+  "architecture": "moss_image",
+  "config": {
+    "dim": 3072,
+    "ffn_dim": 8192,
+    "num_heads": 24,
+    "num_layers": 42,
+    "text_dim": 4096,
+    "latent_channels": 128
+  },
+  "source": {
+    "path": "moss_image_sft_int8_convrot.safetensors",
+    "size_bytes": 5413698958,
+    "mtime_ns": 1792383762315479600,
+    "header_bytes": 75848,
+    "header_sha256": "b823edaa8fbfa67d5594a793a0212e8081922b2e59f7dd25a1a217527f0c9192"
+  },
+  "quantized_linears": 168,
+  "attention_configs": 42,
+  "attention_metadata": {
+    "layers.0.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.1.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.2.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.3.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.4.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.5.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.6.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.7.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.8.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.9.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.10.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.11.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.12.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.13.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.14.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.15.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.16.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.17.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.18.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.19.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.20.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.21.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.22.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.23.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.24.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.25.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.26.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.27.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.28.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.29.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.30.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.31.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.32.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.33.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.34.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.35.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.36.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.37.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.38.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.39.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.40.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    },
+    "layers.41.comfy_attention.config": {
+      "attention": "comfy_kitchen_int8"
+    }
+  },
+  "tensor_count": 757,
+  "metadata_only": true
+}
