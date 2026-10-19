@@ -72,3 +72,19 @@ def test_invalid_conditioning_is_rejected_before_unloading(native_checkpoint, tm
     monkeypatch.setattr(management, "unload_all_models", lambda: pytest.fail("invalid input must not unload models"))
     with pytest.raises(ValueError):
         run_training_job(path, {"target": []}, TrainingConfig(), tmp_path, "bad", device="cpu", model_config=config)
+
+
+def test_multi_record_job_exports_source_snapshot_and_record_schedule(native_checkpoint, tmp_path):
+    import json
+
+    path, config, _ = native_checkpoint
+    records = [conditions(), conditions()]
+    source = {"file": "aging.yaml", "sha256": "a" * 64,
+              "records": [{"target": "t", "positive": "p", "negative": "n"}] * 2}
+    report = run_training_job(path, records, TrainingConfig(steps=3, rank=2, alpha=2, width=16,
+                              height=16, rollout_steps=1), tmp_path, "multi", device="cpu",
+                              model_config=config, prompt_source=source)
+    manifest = json.loads(report["manifest_path"].read_text(encoding="utf-8"))
+    assert report["record_count"] == 2
+    assert [step["record_index"] for step in report["steps"]] == [0, 1, 0]
+    assert manifest["prompt_source"] == source

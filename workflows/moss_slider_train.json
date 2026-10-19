@@ -71,7 +71,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "portrait of an adult person"
+        "A realistic photograph depicts a fully clothed East Asian adult woman about 35 years old. She has straight black shoulder-length hair with bangs and natural adult body proportions. Her face and neck have smooth adult skin with subtle natural texture and firm contours. A close-up portrait includes her head, neck, and shoulders. She faces the camera with a neutral expression. She wears an opaque dark gray collared blouse. A plain pale gray studio wall fills the background. Soft, even studio light reveals natural facial contours and skin texture."
       ]
     },
     {
@@ -108,7 +108,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "portrait of an elderly adult person"
+        "A realistic photograph depicts a fully clothed East Asian elderly woman about 70 years old. She has straight black shoulder-length hair with bangs and natural adult body proportions. Her face has visibly aged facial contours, reduced cheek fullness, gently sagging cheeks and jawline, forehead wrinkles, crow's feet, and nasolabial folds. Her neck shows delicate age-related creases. A close-up portrait includes her head, neck, and shoulders. She faces the camera with a neutral expression. She wears an opaque dark gray collared blouse. A plain pale gray studio wall fills the background. Soft, even studio light reveals natural facial contours and skin texture."
       ]
     },
     {
@@ -145,7 +145,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "portrait of a young adult person"
+        "A realistic photograph depicts a fully clothed East Asian adult woman about 35 years old. She has straight black shoulder-length hair with bangs and natural adult body proportions. Her face and neck have smooth adult skin with subtle natural texture and firm contours. A close-up portrait includes her head, neck, and shoulders. She faces the camera with a neutral expression. She wears an opaque dark gray collared blouse. A plain pale gray studio wall fills the background. Soft, even studio light reveals natural facial contours and skin texture."
       ]
     },
     {
@@ -196,18 +196,18 @@
       },
       "widgets_values": [
         "moss_image_sft_int8_convrot.safetensors",
-        1,
+        300,
+        16,
         2,
-        2.0,
         0.0001,
-        1.0,
+        1,
         0,
-        256,
-        256,
-        4,
+        768,
+        768,
+        8,
         true,
         0,
-        "moss_slider_smoke"
+        "moss_aging_portrait"
       ]
     }
   ],

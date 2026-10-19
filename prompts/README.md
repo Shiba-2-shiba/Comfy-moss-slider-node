@@ -1,0 +1,62 @@
+# MOSS Slider 学習用プロンプト
+
+このリポの prompts/ に置いた .yaml / .yml を **MOSS Slider Train from Prompts** の prompt_yaml 一覧で選択します。MOSS用の **Load CLIP（type=moss_image）** を接続すると、ファイル内の全レコードをエンコードして学習します。
+
+## 同梱セット
+
+| ファイル | 正のLoRA強度で学習する方向 | 構図 |
+|---|---|---|
+| [aging_slider_fullbody.yaml](aging_slider_fullbody.yaml) | 成人女性の顔・首・手の皮膚を加齢 | 全身4件、腰上2件 |
+| [aging_slider_realistic.yaml](aging_slider_realistic.yaml) | 実写調の成人女性を約35歳から約70歳へ加齢。顔の輪郭・しわ・首・手の変化 | 顔アップ2件、腰上2件、全身2件 |
+| [aging_slider_fullbody_male.yaml](aging_slider_fullbody_male.yaml) | 成人男性の顔・首・手の皮膚を加齢 | 全身4件、腰上2件 |
+| [deaging_slider_fullbody.yaml](deaging_slider_fullbody.yaml) | 着衣の成人女性から、約4歳の着衣の女児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
+| [deaging_slider_fullbody_male.yaml](deaging_slider_fullbody_male.yaml) | 着衣の成人男性から、約4歳の着衣の男児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
+| [breast_size_slider.yaml](breast_size_slider.yaml) | 着衣の成人女性の胸を大きくする。小さい胸との明示的な対比 | 上半身〜腰下4件、全身2件 |
+
+各ファイル6レコード、合計36レコード。既存のアニメ調5セットはそのまま選択できます。既存のアニメ調加齢セットでは成人の体格と髪を保ち、皮膚の記述だけを変えています。若返りは参照側の幼児化という意図を引き継いでいます。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。既存5セットは2D anime、追加のaging_slider_realistic.yamlは写真の英語キャプションです。同じレコードの衣装・姿勢・背景・光を揃えています。実写加齢では年齢と顔の輪郭の変化も明記し、髪色・髪型は対で保っています。モデル固有のトリガー語は含めていません。
+
+## 書き方と出典
+
+参照したKrea2リポの prompts/ にある学習方向と、複数の構図で対を作る方式をもとに、本文をMOSS向けに新規記述しました。Krea2の学習設定やanchor機能を移植したものではありません。
+
+MOSSのローカル公式資料 [USERGUIDE — Prompt Guidelines / Image Captioning](../docs/MOSS-Image/USERGUIDE.md) と [Prompt Enhancer](../docs/MOSS-Image/skills/moss-image-prompt-enhancer/SKILL.md) を根拠に、完成画像に見える人物・外見・服・構図・背景・色・光・画風を自然な英語で記述しています。本文へsystem指示、チャット特殊トークン、品質スコアの羅列を追加しません。MOSS用のテンプレートはnative CLIPが付与します。
+
+## フィールド
+
+~~~yaml
+- target: >-
+    A 2D anime illustration depicts a fully clothed adult woman
+    standing in a softly lit studio, with smooth facial skin.
+  positive: >-
+    A 2D anime illustration depicts a fully clothed adult woman
+    standing in a softly lit studio, with fine facial wrinkles.
+  negative: >-
+    A 2D anime illustration depicts a fully clothed adult woman
+    standing in a softly lit studio, with smooth facial skin.
+~~~
+
+- target: studentに入力する基準キャプション。
+- positive: 正のLoRA強度で向かう概念。
+- negative: teacherの差分を作る比較対象のキャプション。生成用の除外語句を記入する欄ではありません。
+
+通常のYAMLブロック形式・UTF-8 BOM・スカラーのanchor/aliasを読めます。各レコードはこの3フィールドだけを持つ形式です。Krea2のneutralやanchorによる追加損失は未対応で、記入した場合は明示的なエラーになります。重複キー・空文字・同一のpositive/negative・フォルダー外のパスも拒否します。ComfyUIに既存のPyYAMLを使用し、追加インストールは行っていません。
+
+ファイルは1〜64レコード、2 MiBまで。各roleの実エンコード結果はbatch1・4096次元・1〜4096tokenのMOSS条件として検査し、paddingを個別に除去します。
+
+## stepsと選択ファイル
+
+stepsはファイル全体でのoptimizer更新総数です。6レコードの場合、0→1→2→3→4→5→0…と一更新につき一件を使います。steps=6で各一回、steps=100なら各16〜17回です。6未満のstepsでは後半のレコードを使いません。
+
+学習のたびにファイルを読み取り、その時点の本文とSHA256をreport/manifestのprompt_sourceへ保存します。同名ファイルを後で編集しても、どの内容で学習したかを追えます。追加ファイルはこのフォルダーに保存し、ComfyUI側のノード定義を再読込すると一覧に現れます。新ノードはqueueごとに学習します。
+
+## 使うワークフローと確認範囲
+
+[編集用workflow](../workflows/moss_slider_train_prompts.json) を開き、checkpoint_name、MOSS用CLIP、prompt_yamlを選択します。[API版](../workflows/moss_slider_train_prompts_api.json) も同梱しています。初期選択は実写女性加齢の `aging_slider_realistic.yaml` です。学習初期値は **steps=300、rank=16、alpha=2、learning_rate=0.0001、eta=1、768×768、rollout_steps=8**、seed=0、gradient_checkpointing=true、blocks_to_swap=0です。これは効果を比較するための開始設定で、品質の最適値ではありません。
+
+`rollout_steps=1` は最大ノイズ時刻だけの学習になるため避けます。まず上記で比較し、必要に応じてstepsを600→1200、etaを2、rollout_stepsを16へ、一項目ずつ変更してください。rollout_stepsを増やすと途中状態の生成が入り、1更新あたりの時間も増えます。INT8基底での比較には専用の **MOSS Slider Apply INT8** を使用し、同じseed・promptで強度0/1/2を確認します。実写セットの加齢効果は実画像で未検証です。
+
+手動conditioning型の[編集用workflow](../workflows/moss_slider_train.json)と[API版](../workflows/moss_slider_train_api.json)も同じ学習値に揃え、実写の顔アップ1件を初期キャプションにしています。これらはワークフロー保存値であり、ノードを新規追加したときの既定値とは別です。
+
+2026-10-19、R9700上のComfyUIで女性加齢の全6レコードを実encoderから6 step学習し、有限loss/gradientとLoRA保存、prompt_sourceのSHA256一致を確認しました。当時の5ファイルの読込・構造はテスト済みですが、各sliderの画質・方向効果・性別分離・構図保持は未評価です。負の強度で望む逆方向の効果が得られる保証もありません。
+
+詳細は [実機検証記録](../docs/prompt-ui-validation-20261019.md)。

@@ -65,6 +65,11 @@ class _ToyAdapter:
         return values.movedim(-1, 1)
 
 
+def _numerical_steps(report):
+    return [{key: value for key, value in entry.items()
+             if key not in {"seconds", "elapsed_seconds", "eta_seconds"}} for entry in report["steps"]]
+
+
 def _conditions():
     return {
         "target": torch.zeros(1, 2, 5),
@@ -264,7 +269,7 @@ def test_training_is_reproducible_for_seed_and_initial_parameters():
     first_report = train_slider(first, _conditions(), config)
     second_report = train_slider(second, _conditions(), config)
 
-    assert first_report["steps"] == second_report["steps"]
+    assert _numerical_steps(first_report) == _numerical_steps(second_report)
     for first_parameter, second_parameter in zip(
         lora_parameters(first.native_model), lora_parameters(second.native_model)
     ):
@@ -295,7 +300,7 @@ def test_training_draws_a_new_reproducible_noise_and_timestep_per_step():
     for actual, expected in zip(first_points, second_points, strict=True):
         torch.testing.assert_close(actual, expected, rtol=0, atol=0)
     assert [entry["noise_sequence_index"] for entry in first_report["steps"]] == list(range(config.steps))
-    assert first_report["steps"] == second_report["steps"]
+    assert _numerical_steps(first_report) == _numerical_steps(second_report)
     assert "timestep_index" not in first_report
 
 
@@ -358,3 +363,37 @@ def test_training_rejects_nonfinite_loss_before_optimizer_step():
             _conditions(),
             TrainingConfig(steps=1, rank=2, alpha=2.0, width=16, height=16, rollout_steps=1),
         )
+
+
+def test_multiple_records_cycle_in_order_without_averaging_conditions():
+    model = _toy()
+    records = [_conditions(), {"target": torch.full((1, 4, 5), 10.0),
+                               "positive": torch.full((1, 5, 5), 15.0),
+                               "negative": torch.full((1, 2, 5), -15.0)}]
+    report = train_slider(model, records, TrainingConfig(steps=3, width=16, height=16, rollout_steps=1))
+    students = [call["conditioning"] for call in model.calls if call["grad"]]
+    assert len(students) == 3
+    assert students[0] is records[0]["target"]
+    assert students[1] is records[1]["target"]
+    assert students[2] is records[0]["target"]
+    assert report["record_count"] == 2
+    assert [step["record_index"] for step in report["steps"]] == [0, 1, 0]
+    teachers = [call["conditioning"] for call in model.calls if not call["grad"]]
+    assert teachers[3] is records[1]["target"]
+    assert teachers[4] is records[1]["positive"]
+    assert teachers[5] is records[1]["negative"]
+
+
+def test_step_timing_reports_elapsed_and_remaining_training_time(monkeypatch):
+    import moss_slider_node.training as training
+
+    ticks = iter([100.0, 100.0, 102.0, 102.0, 105.0, 105.0, 109.0, 109.0])
+    monkeypatch.setattr(training, "perf_counter", lambda: next(ticks))
+    events = []
+    report = train_slider(_toy(), _conditions(), TrainingConfig(steps=3, width=16, height=16, rollout_steps=1),
+                          progress=lambda step, total, entry: events.append(entry.copy()))
+    assert [entry["seconds"] for entry in report["steps"]] == [2.0, 3.0, 4.0]
+    assert [entry["elapsed_seconds"] for entry in report["steps"]] == [2.0, 5.0, 9.0]
+    assert [entry["eta_seconds"] for entry in report["steps"]] == [4.0, 2.5, 0.0]
+    assert report["total_seconds"] == 9.0
+    assert [entry["seconds"] for entry in events] == [2.0, 3.0, 4.0]

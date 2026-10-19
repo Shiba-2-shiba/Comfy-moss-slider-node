@@ -1,0 +1,33 @@
+{
+  "1": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3.5_9b_int8_convrot.safetensors",
+      "type": "moss_image",
+      "device": "default"
+    }
+  },
+  "2": {
+    "class_type": "MossSliderTrainFromPrompts",
+    "inputs": {
+      "checkpoint_name": "moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors",
+      "clip": [
+        "1",
+        0
+      ],
+      "prompt_yaml": "aging_slider_realistic.yaml",
+      "steps": 300,
+      "rank": 16,
+      "alpha": 2,
+      "learning_rate": 0.0001,
+      "eta": 1,
+      "seed": 0,
+      "width": 768,
+      "height": 768,
+      "rollout_steps": 8,
+      "gradient_checkpointing": true,
+      "blocks_to_swap": 0,
+      "output_prefix": "moss_aging_realistic"
+    }
+  }
+}

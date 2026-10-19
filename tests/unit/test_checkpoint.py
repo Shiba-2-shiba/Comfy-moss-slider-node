@@ -94,3 +94,83 @@ def test_overlap_and_duplicate_canonical_keys_are_rejected(tmp_path):
     path.write_bytes(struct.pack("<Q", len(raw)) + raw + b"0000")
     with pytest.raises(ValueError, match="offset"):
         read_header(path)
+
+
+def metadata_checkpoint(path):
+    """StarNodes-style global metadata with all eligible Linear weights quantized."""
+    from safetensors.torch import load_file
+
+    config = minimal_checkpoint(path)
+    tensors = {k: v.clone() for k, v in load_file(path).items()
+               if not k.endswith((".comfy_quant", ".comfy_attention.config"))}
+    layers = {}
+    for name, shape in expected_parameter_shapes(config).items():
+        if name.endswith(".weight") and len(shape) == 2 and shape[1] % 256 == 0:
+            prefix = "model.diffusion_model." + name.removesuffix(".weight")
+            layers[prefix] = {"format": "int8_tensorwise", "convrot": True, "convrot_groupsize": 256}
+            tensors[name] = torch.zeros(shape, dtype=torch.int8)
+            tensors[name.removesuffix(".weight") + ".weight_scale"] = torch.ones(shape[0], 1)
+    save_file({"model.diffusion_model." + k: v for k, v in tensors.items()}, str(path),
+              metadata={"_quantization_metadata": json.dumps({"format": "int8_convrot", "layers": layers})})
+    return config
+
+
+def test_global_metadata_supports_additional_frozen_linears_without_attention_records(tmp_path):
+    path = tmp_path / "global.safetensors"
+    config = metadata_checkpoint(path)
+    report = inspect_checkpoint(path, config=config)
+    assert report["status"] == "SUPPORTED", report
+    assert report["quantized_linears"] == 24
+    assert report["attention_configs"] == 0
+
+
+@pytest.mark.parametrize("kind", ["missing_spec", "unknown_module", "non_linear", "bad_json",
+                                  "duplicate_canonical", "missing_scale", "bad_bias", "bad_scale"])
+def test_global_metadata_rejects_incomplete_or_unsafe_schema(tmp_path, kind):
+    from safetensors import safe_open
+    from safetensors.torch import load_file
+
+    path = tmp_path / "global.safetensors"
+    config = metadata_checkpoint(path)
+    tensors = {k: v.clone() for k, v in load_file(path).items()}
+    with safe_open(str(path), framework="pt") as source:
+        metadata = source.metadata()
+    quant = json.loads(metadata["_quantization_metadata"])
+    prefix = "model.diffusion_model."
+    if kind == "missing_spec":
+        del quant["layers"][prefix + "layers.0.proj.qkv"]
+    elif kind == "unknown_module":
+        quant["layers"][prefix + "unknown"] = next(iter(quant["layers"].values()))
+    elif kind == "non_linear":
+        quant["layers"][prefix + "final_norm_video"] = next(iter(quant["layers"].values()))
+    elif kind == "duplicate_canonical":
+        quant["layers"]["layers.0.proj.qkv"] = quant["layers"][prefix + "layers.0.proj.qkv"]
+    elif kind == "missing_scale":
+        del tensors[prefix + "text_embedder.proj.weight_scale"]
+    elif kind == "bad_bias":
+        tensors[prefix + "text_embedder.proj.bias"] = torch.zeros(config.dim, dtype=torch.int8)
+    elif kind == "bad_scale":
+        tensors[prefix + "text_embedder.proj.weight_scale"] = torch.ones(config.dim, 2)
+    metadata["_quantization_metadata"] = "{" if kind == "bad_json" else json.dumps(quant)
+    save_file(tensors, str(path), metadata=metadata)
+    assert inspect_checkpoint(path, config=config)["status"] == "INVALID"
+
+
+@pytest.mark.parametrize("conflict", [False, True])
+def test_global_and_tensor_quantization_configs_must_agree(tmp_path, conflict):
+    from safetensors import safe_open
+    from safetensors.torch import load_file
+
+    path = tmp_path / "hybrid.safetensors"
+    config = metadata_checkpoint(path)
+    tensors = {k: v.clone() for k, v in load_file(path).items()}
+    with safe_open(str(path), framework="pt") as source:
+        metadata = source.metadata()
+    spec = {"format": "int8_tensorwise", "convrot": True, "convrot_groupsize": 64 if conflict else 256}
+    tensors["model.diffusion_model.layers.0.proj.qkv.comfy_quant"] = torch.tensor(
+        list(json.dumps(spec).encode()), dtype=torch.uint8)
+    save_file(tensors, str(path), metadata=metadata)
+    report = inspect_checkpoint(path, config=config)
+    assert report["status"] == ("INVALID" if conflict else "SUPPORTED")
+    if conflict:
+        assert "Conflicting" in report["reason"]

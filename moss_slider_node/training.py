@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import math
-from typing import Any, Callable, Mapping
+from time import perf_counter
+from typing import Any, Callable, Mapping, Sequence
 
 import torch
 from torch import Tensor, nn
@@ -81,7 +82,7 @@ def slider_teacher(base: Tensor, positive: Tensor, negative: Tensor, eta: float)
 
 def train_slider(
     model: nn.Module | Any,
-    conditions: Mapping[str, Tensor],
+    conditions: Mapping[str, Tensor] | Sequence[Mapping[str, Tensor]],
     config: TrainingConfig,
     *,
     progress: Callable[[int, int, dict[str, Any]], None] | None = None,
@@ -99,7 +100,11 @@ def train_slider(
     except (AttributeError, TypeError, RuntimeError) as exc:
         raise TypeError("model.device must be a valid torch device") from exc
 
-    prepared_conditions = _validate_conditions(conditions, device)
+    records = [conditions] if isinstance(conditions, Mapping) else conditions
+    if not isinstance(records, (list, tuple)) or not records:
+        raise ValueError("At least one conditioning record is required")
+    # Keep inactive records on CPU; only the selected record is resident on GPU.
+    prepared_records = [_validate_conditions(record, torch.device("cpu")) for record in records]
     lora_model = getattr(model, "native_model", model)
     if not isinstance(lora_model, nn.Module):
         raise TypeError("model.native_model must be a torch.nn.Module")
@@ -136,6 +141,8 @@ def train_slider(
         "sampling": "one_seeded_cpu_generator; draw timestep then noise per step",
         "optimizer_parameter_count": sum(parameter.numel() for parameter in parameters),
         "progress_callback": "progress(completed_step, total_steps, step_details)",
+        "record_count": len(prepared_records),
+        "record_schedule": "round_robin",
         "steps": [],
     }
 
@@ -143,9 +150,14 @@ def train_slider(
         if cancel is not None:
             cancel()
 
+    started = perf_counter()
     try:
         for step in range(config.steps):
             check_cancel()
+            tick = perf_counter()
+            record_index = step % len(prepared_records)
+            prepared_conditions = {role: value.to(device=device)
+                                   for role, value in prepared_records[record_index].items()}
             timestep_index = int(
                 torch.randint(0, config.rollout_steps, (1,), generator=sample_generator).item()
             )
@@ -207,6 +219,7 @@ def train_slider(
             optimizer.step()
             entry = {
                 "step": step + 1,
+                "record_index": record_index,
                 "loss": float(loss.detach()),
                 "grad_norm": float(grad_norm.detach()),
                 "timestep_index": timestep_index,
@@ -214,9 +227,17 @@ def train_slider(
                 "noise_sequence_index": step,
                 "teacher_requires_grad": teacher.requires_grad,
             }
+            if device.type == "cuda":
+                # ROCm uses the CUDA API too. Include queued optimizer work in wall time.
+                torch.cuda.synchronize(device)
+            now = perf_counter()
+            elapsed = now - started
+            entry.update(seconds=now - tick, elapsed_seconds=elapsed,
+                         eta_seconds=elapsed / (step + 1) * (config.steps - step - 1))
             report["steps"].append(entry)
             if progress is not None:
                 progress(step + 1, config.steps, entry)
+        report["total_seconds"] = perf_counter() - started
         return report
     finally:
         optimizer.zero_grad(set_to_none=True)

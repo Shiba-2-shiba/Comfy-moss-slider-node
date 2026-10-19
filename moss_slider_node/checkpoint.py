@@ -153,6 +153,21 @@ def _read_config(stream, item, payload_offset):
     return value
 
 
+def _global_quantization_specs(header):
+    raw = header.get("__metadata__", {}).get("_quantization_metadata")
+    if raw is None:
+        return None
+    try:
+        metadata = json.loads(raw, object_pairs_hook=_unique_pairs)
+    except (UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError("Invalid global quantization metadata JSON") from error
+    if (not isinstance(metadata, dict) or metadata.get("format") != "int8_convrot"
+            or not isinstance(metadata.get("layers"), dict)):
+        raise ValueError("Invalid global ConvRot quantization metadata")
+    layers = metadata["layers"]
+    return {name: layers[key] for name, key in canonical_keys(layers).items()}
+
+
 def inspect_checkpoint(path, *, config=None):
     config = config or MossConfig()
     report = {"status": "INVALID", "architecture": "moss_image", "config": asdict(config)}
@@ -166,8 +181,18 @@ def inspect_checkpoint(path, *, config=None):
         if layers != set(range(config.num_layers)):
             raise ValueError(f"MOSS block count differs from expected {config.num_layers}")
         expected = expected_parameter_shapes(config)
-        quantized_weights = {f"layers.{i}.proj.{name}.weight"
-                             for i in range(config.num_layers) for name in _TARGETS}
+        global_specs = _global_quantization_specs(header)
+        for name in global_specs or {}:
+            shape = expected.get(name + ".weight", ())
+            if len(shape) != 2:
+                raise ValueError(f"Quantization metadata target is not a known Linear: {name}")
+        quantized_weights = {name for name in expected if name in keys and header[keys[name]]["dtype"] == "I8"}
+        required_weights = {f"layers.{i}.proj.{name}.weight"
+                            for i in range(config.num_layers) for name in _TARGETS}
+        if not required_weights <= quantized_weights:
+            raise ValueError("All packed MOSS adapter targets must use INT8 weights")
+        if any(not name.endswith(".weight") or len(expected[name]) != 2 for name in quantized_weights):
+            raise ValueError("INT8 is supported only for known Linear weights")
         permitted = set(expected) | {"rope.bands"}
         for name in quantized_weights:
             permitted.update((name.removesuffix(".weight") + ".weight_scale",
@@ -185,32 +210,46 @@ def inspect_checkpoint(path, *, config=None):
             item = header[keys["rope.bands"]]
             if item["shape"] != [config.dim // config.num_heads // 8] or item["dtype"] != "F32":
                 raise ValueError("Invalid legacy rope.bands shape/dtype")
-        attention_configs = {}
+        quantization_specs, attention_configs = {}, {}
         with Path(path).open("rb") as stream:
+            for weight_name in sorted(quantized_weights):
+                prefix = weight_name.removesuffix(".weight")
+                shape = expected[weight_name]
+                scale_name, spec_name = prefix + ".weight_scale", prefix + ".comfy_quant"
+                if scale_name not in keys:
+                    raise ValueError(f"Missing INT8 scale: {prefix}")
+                scale = header[keys[scale_name]]
+                if scale["dtype"] != "F32" or scale["shape"] != [shape[0], 1]:
+                    raise ValueError(f"Invalid per-row scale shape/dtype: {prefix}")
+                spec = (global_specs or {}).get(prefix)
+                if spec_name in keys:
+                    tensor_spec = _read_config(stream, header[keys[spec_name]], identity["header_bytes"] + 8)
+                    if spec is not None and spec != tensor_spec:
+                        raise ValueError(f"Conflicting tensor/global quantization config: {prefix}")
+                    spec = tensor_spec
+                if not isinstance(spec, dict):
+                    raise ValueError(f"Missing INT8 quantization config: {prefix}")
+                if (spec.get("format") != "int8_tensorwise" or spec.get("convrot") is not True
+                        or spec.get("per_row", True) is not True):
+                    return {**report, "status": "UNSUPPORTED", "reason": f"Unsupported ConvRot format: {prefix}"}
+                if type(spec.get("convrot_groupsize")) is not int or spec["convrot_groupsize"] != 256 or shape[1] % 256:
+                    return {**report, "status": "UNSUPPORTED", "reason": f"Unsupported ConvRot group: {prefix}"}
+                quantization_specs[prefix] = spec
+            if set(global_specs or {}) - quantization_specs.keys():
+                raise ValueError("Global quantization metadata describes non-INT8 weights")
             for index in range(config.num_layers):
-                for name, shape in config.linear_shapes().items():
-                    prefix = f"layers.{index}.proj.{name}"
-                    required = [prefix + suffix for suffix in (".weight", ".weight_scale", ".comfy_quant")]
-                    if any(key not in keys for key in required):
-                        raise ValueError(f"Missing packed INT8 weight/scale/config: {prefix}")
-                    weight, scale = (header[keys[k]] for k in required[:2])
-                    if weight["dtype"] != "I8" or weight["shape"] != list(shape):
-                        raise ValueError(f"Packed MOSS weight shape/dtype mismatch: {prefix}")
-                    if scale["dtype"] != "F32" or scale["shape"] != [shape[0], 1]:
-                        raise ValueError(f"Invalid per-row scale shape/dtype: {prefix}")
-                    spec = _read_config(stream, header[keys[required[2]]], identity["header_bytes"] + 8)
-                    if spec.get("format") != "int8_tensorwise" or spec.get("convrot") is not True:
-                        return {**report, "status": "UNSUPPORTED", "reason": f"Unsupported ConvRot format: {prefix}"}
-                    if spec.get("convrot_groupsize") != 256 or shape[1] % 256:
-                        return {**report, "status": "UNSUPPORTED", "reason": f"Unsupported ConvRot group: {prefix}"}
                 name = f"layers.{index}.comfy_attention.config"
                 if name not in keys:
+                    if global_specs is not None:
+                        continue  # Global ConvRot files use native default attention unless explicitly configured.
                     raise ValueError(f"Missing attention config: {name}")
                 value = _read_config(stream, header[keys[name]], identity["header_bytes"] + 8)
                 if value != {"attention": "comfy_kitchen_int8"}:
                     return {**report, "status": "UNSUPPORTED", "reason": f"Unsupported attention config: {name}"}
                 attention_configs[name] = value
-        return {**report, "status": "SUPPORTED", "quantized_linears": config.num_layers * 4,
+        return {**report, "status": "SUPPORTED", "quantized_linears": len(quantization_specs),
+                "quantization_metadata": quantization_specs,
+                "quantization_config_source": "global_metadata" if global_specs is not None else "tensor_configs",
                 "attention_configs": len(attention_configs), "attention_metadata": attention_configs,
                 "tensor_count": len(keys)}
     except (ValueError, KeyError, TypeError, OSError) as error:
@@ -247,7 +286,7 @@ def load_training_model(path, *, device="cpu", compute_dtype=torch.bfloat16, blo
     keys = canonical_keys(header)
     model = create_native_model(config, device="meta", dtype=compute_dtype)
     expected = dict(model.named_parameters())
-    quantized = {f"layers.{i}.proj.{name}" for i in range(config.num_layers) for name in _TARGETS}
+    quantized = set(info["quantization_metadata"])
     permitted = set(expected) | set(info["attention_metadata"]) | {"rope.bands"}
     for name in quantized:
         permitted.update((name + ".comfy_quant", name + ".weight_scale"))
@@ -274,9 +313,18 @@ def load_training_model(path, *, device="cpu", compute_dtype=torch.bfloat16, blo
             value = source.get_tensor(keys[name])
             if module_name in quantized:
                 scale = source.get_tensor(keys[module_name + ".weight_scale"])
-                block = int(module_name.split(".")[1])
-                storage_device = "cpu" if block >= config.num_layers - blocks_to_swap else destination
-                layer = FrozenLinear(value.to(storage_device), scale=scale.to(storage_device), group_size=256)
+                block = re.fullmatch(r"layers\.(\d+)\.proj\.\w+", module_name)
+                staged = block is not None and int(block.group(1)) >= config.num_layers - blocks_to_swap
+                storage_device = torch.device("cpu") if staged else destination
+                bias_name = module_name + ".bias"
+                bias = source.get_tensor(keys[bias_name]) if bias_name in expected else None
+                if bias is not None:
+                    if not torch.isfinite(bias).all():
+                        raise ValueError(f"Non-finite MOSS parameter: {bias_name}")
+                    bias = bias.to(storage_device)
+                    used.add(bias_name)
+                layer = FrozenLinear(value.to(storage_device), bias=bias, scale=scale.to(storage_device),
+                                     group_size=info["quantization_metadata"][module_name]["convrot_groupsize"])
                 _replace(model, module_name, layer)
             else:
                 if not torch.isfinite(value).all():

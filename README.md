@@ -2,16 +2,16 @@
 
 MOSS-ImageのConvRot INT8モデルを凍結し、テキストの方向を制御するSlider LoRAを学習するComfyUI V3ノードです。INT8の基底とscaleを保持し、各Linearの計算時だけ浮動小数点へ戻して、FP32 LoRA A/Bのみを更新します。
 
-現在は**CPUの小型native MOSS構造まで検証した実験版**です。指定された実checkpointでのGPU学習、必要VRAM、速度、生成品質は未検証です。
+現在は実験版です。CPUの小型native MOSS検証に加え、Radeon AI PRO R9700上で `moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors` のrank2・1/10 step学習、保存、強度-1/0/+1での推論を確認しています。長時間学習、必要VRAMの下限、slider効果の品質は未評価です。[実機互換検証](docs/model-compatibility-20261019.md)。
 
-2026-10-19の開発検証: **133 tests passed**、ruff・コアmypy・構文検査PASS。[検証概要](docs/validation.json)。
+2026-10-19の互換対応後: **169 tests passed**、構文・差分チェックPASS。ruff/mypyは現在の環境に未導入のため今回未実行。初期実装時の133件・静的解析結果は[以前の検証概要](docs/validation.json)を参照してください。
 
 ## 必要な環境
 
 - Python 3.10以上、PyTorch 2.9以上、safetensors 0.7以上。
 - ネイティブMOSS、packed QKV、V3、LoRA bypass対応のComfyUI。開発基準はcommit `8f04fd6ecf4a548937971e840af2a985529fab76`です。
 - 開発基準のComfyUI依存: `comfy-kitchen==0.2.39`、`comfy-aimdo==0.5.6`。ComfyUIを実行するPython環境の依存を合わせてください。
-- 基底: `moss_image_sft_int8_convrot.safetensors`。42 blockのpacked QKV、168個のINT8 Linear、group size 256に対応します。BF16モデルを自動でINT8化する機能はありません。
+- 基底: `moss_image_sft_int8_convrot.safetensors` のtensor単位設定と、StarNodesのヘッダー `_quantization_metadata` 形式に対応します。後者は `moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors` の184個のINT8 Linearで検証しました。42 blockのpacked QKV、ConvRot group size 256を必要とします。追加のtext refiner・time・modulation・出力投影も凍結INT8で読み込み、LoRAの対象は従来の168投影です。BF16モデルを自動でINT8化する機能はありません。
 - 実promptにはMOSS用Qwen3.5-9B text encoderとtokenizerが必要です。VAEは学習後の画像確認に必要で、テキストからのnoise rollout学習自体には使いません。
 
 このフォルダーを`ComfyUI/custom_nodes/Comfy-moss-slider-node`として配置し、ComfyUIを再起動します。隣のMOSS-Image・sd-scripts・Krea2リポジトリは実行時依存ではありません。モデルはComfyUIの`diffusion_models`、text encoderは`text_encoders`の登録済み検索先に置きます。既存の`extra_model_paths.yaml`による検索先も利用できます。
@@ -24,7 +24,14 @@ MOSS-ImageのConvRot INT8モデルを凍結し、テキストの方向を制御�
 |---|---|
 | MOSS Slider Inspect INT8 | 大きい重みをロードせず、header・量子化形式・形状を検査 |
 | MOSS Slider Train INT8 | target/positive/negative条件から単方向sliderを学習し、LoRAとreportを出力 |
+| MOSS Slider Train from Prompts | MOSS CLIPとprompts/のYAMLを選び、全レコードを順番に学習 |
 | MOSS Slider Apply INT8 | LoRAのQKVを結合してbypass適用し、INT8基底をmerge・書換せずMODELを返す |
+
+プロンプト一覧から選ぶ場合は、[MOSS Slider Train from Promptsのworkflow](workflows/moss_slider_train_prompts.json)を開き、標準のLoad CLIP（type=moss_image）を接続して **prompt_yaml** を選択します。[prompts/](prompts/README.md)に加齢・若返りの男女別と成人女性の胸サイズのアニメ調5セットと、実写調の女性加齢1セット（各6件）を同梱しています。stepsは更新総数で、全レコードを一件ずつ循環して使います。選択ファイルの本文とSHA256はmanifestに保存します。
+
+同梱学習ワークフローは効果比較用の開始設定として、300 steps・rank16・alpha2・学習率1e-4・eta1・768×768・rollout_steps=8へ揃えています。プロンプト選択型の初期選択は実写加齢の `aging_slider_realistic.yaml` です。設定の意図と調整順は[prompts/README.md](prompts/README.md)を参照してください。実写セットの生成品質は未検証で、ノードを新規追加した場合の既定値とは別です。
+
+手動でconditioningを接続する場合は従来のMOSS Slider Train INT8を使えます。
 
 1. 標準の`Load CLIP`でMOSS用text encoderを読み、typeを`moss_image`にします。
 2. 3個の`CLIP Text Encode`を作り、target/positive/negativeへ接続します。例: target=`portrait of an adult person`、positive=`portrait of an elderly adult person`、negative=`portrait of a young adult person`。
@@ -42,6 +49,18 @@ Trainはqueueごとに学習する出力ノードです。画像比較では保�
 
 複数entry、左padding・内部にholeのあるmask、全padding、NaN/Inf、schedule、領域条件、ControlNet、hooks、追加guidance等はエラーにします。`pooled_output`はMOSSでは使いません。通常のMOSS Text Encode出力をそのまま接続する構成が初期対象です。
 
+## 学習中の進捗
+
+ComfyUIのログに、プロンプトのエンコード件数、checkpointのhash計算、モデルロード、学習開始、各step、保存完了を表示します。学習中の標準進捗バーはoptimizerの更新数で進みます。
+
+~~~text
+MOSS Slider step 2/6 | 1.30s/step | elapsed 4.6s | ETA 9.2s | loss=0.0239832 grad=0.066817
+~~~
+
+秒/stepは、そのstepのrollout・teacher/student予測・backward・optimizer更新を含む実時間です。CUDA/ROCmではGPU処理の完了を待って計測します。elapsedとETAは学習ループの時間で、事前のエンコード・hash・ロードや最後の保存は含みません。ETAは完了済みstepの平均からの目安で、rolloutの長さなどで変動します。各stepのseconds・elapsed_seconds・eta_secondsと、学習ループのtotal_secondsはreport/manifestにも残ります。
+
+現在のDesktop環境では、ComfyUIログのファイルは C:/ComfyUI/user/comfyui_8000.log です。[実機での進捗表示確認](docs/training-progress-20261019.md)。
+
 ## 学習設定
 
 | 設定 | 内容 |
@@ -54,7 +73,7 @@ Trainはqueueごとに学習する出力ノードです。画像比較では保�
 | `gradient_checkpointing` | block単位のnon-reentrant再計算。既定有効 |
 | `blocks_to_swap` | 末尾N blockのI8/scaleをCPUに残し、Linearごとに同期転送。0〜42 |
 
-teacherはLoRA無効の同じ量子化基底から作ります。`teacher=base(target)+eta*(base(positive)-base(negative))`、studentはtarget条件とLoRA強度+1で、raw flow velocityのMSEを学習します。Attentionはteacher/studentともPyTorchの勾配対応経路です。推論時のINT8 Attentionとの差はGPU検証の対象です。
+teacherはLoRA無効の同じ量子化基底から作ります。`teacher=base(target)+eta*(base(positive)-base(negative))`、studentはtarget条件とLoRA強度+1で、raw flow velocityのMSEを学習します。Attentionはteacher/studentともPyTorchの勾配対応経路です。推論時のbackendとの差はモデル・環境別の検証対象です。
 
 内部は42×4=168 adapterです。QKVはAを共有し、保存時にAをq/k/vへ複製、Bを行方向に分割するため、252論理target・756 tensorの標準LoRAになります。独立したAを持つq/k/v LoRAを同rankへ圧縮して読み込むことはしません。text encoder、text refiner、norm、modulation、入出力投影は学習しません。
 

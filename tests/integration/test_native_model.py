@@ -7,7 +7,11 @@ from moss_slider_node.checkpoint import MossConfig, expected_parameter_shapes, l
 from moss_slider_node.model_adapter import MossTrainingAdapter, create_native_model, training_context
 
 
-def test_metadata_schema_matches_real_native_model_without_loading_weights():
+@pytest.mark.parametrize("aimdo_enabled", [False, True])
+def test_metadata_schema_matches_real_native_model_without_loading_weights(monkeypatch, aimdo_enabled):
+    import comfy.memory_management
+
+    monkeypatch.setattr(comfy.memory_management, "aimdo_enabled", aimdo_enabled)
     config = MossConfig()
     native = create_native_model(config)
     assert expected_parameter_shapes(config) == {name: tuple(p.shape) for name, p in native.named_parameters()}
@@ -144,3 +148,58 @@ def test_bfloat16_compute_accepts_float32_non_quantized_checkpoint_tensors(nativ
         output.float().square().mean().backward()
     assert torch.isfinite(output).all()
     assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in lora_parameters(model))
+
+
+@pytest.mark.parametrize("compute_dtype", [torch.float32, torch.bfloat16])
+def test_global_quantized_non_adapter_linears_preserve_bias_and_gradients(native_checkpoint, compute_dtype):
+    import json
+    from safetensors.torch import load_file, save_file
+    from moss_slider_node.lora import inject_lora, lora_parameters
+    from moss_slider_node.quantization import FrozenLinear, rotate
+
+    path, config, dense_state = native_checkpoint
+    tensors = {k: v.clone() for k, v in load_file(path).items()
+               if not k.endswith((".comfy_quant", ".comfy_attention.config"))}
+    specs = {}
+    for name, value in list(tensors.items()):
+        if not name.endswith(".weight") or value.ndim != 2 or value.shape[1] % 256:
+            continue
+        module = name.removesuffix(".weight")
+        specs["model.diffusion_model." + module] = {
+            "format": "int8_tensorwise", "convrot": True, "convrot_groupsize": 256}
+        if value.dtype != torch.int8:
+            rotated = rotate(value, 256)
+            scale = (rotated.abs().amax(dim=1, keepdim=True) / 127).clamp_min(1e-8)
+            packed = (rotated / scale).round().clamp(-127, 127).to(torch.int8)
+            tensors[name] = packed
+            tensors[module + ".weight_scale"] = scale
+            dense_state[name] = rotate(packed.float() * scale, 256)
+    global_path = path.with_name("global_moss.safetensors")
+    save_file({"model.diffusion_model." + k: v for k, v in tensors.items()}, str(global_path),
+              metadata={"_quantization_metadata": json.dumps({"format": "int8_convrot", "layers": specs})})
+    model, info = load_training_model(global_path, config=config, compute_dtype=compute_dtype, blocks_to_swap=1)
+    assert info["quantized_linears"] == 24
+    assert info["attention_configs"] == 0
+    assert isinstance(model.text_embedder.proj, FrozenLinear)
+    assert isinstance(model.final_linear_video, FrozenLinear)
+    assert model.text_embedder.proj.weight.dtype == torch.int8
+    torch.testing.assert_close(model.text_embedder.proj.bias, dense_state["text_embedder.proj.bias"])
+    reference = create_native_model(config, device="cpu", dtype=compute_dtype)
+    reference.load_state_dict(dense_state, assign=True)
+    x, context, sigma = torch.randn(1, 128, 1, 2), torch.randn(1, 3, 4096), torch.tensor([0.4])
+    adapter = MossTrainingAdapter(model, dtype=compute_dtype)
+    with training_context(reference), torch.no_grad():
+        expected = reference(x.to(compute_dtype), sigma, context.to(compute_dtype))
+    targets = inject_lora(model, rank=2, alpha=2)
+    assert len(targets) == 8
+    base = {name: value.clone() for name, value in model.named_buffers()}
+    with training_context(model):
+        actual = adapter.predict_velocity(x, sigma, context)
+        actual.float().square().mean().backward()
+    tolerance = 2e-2 if compute_dtype == torch.bfloat16 else 1e-5
+    torch.testing.assert_close(actual, expected, atol=tolerance, rtol=tolerance)
+    assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in lora_parameters(model))
+    assert model.layers[0].proj["qkv"].lora_B.grad.abs().sum() > 0
+    assert not any(p.requires_grad for name, p in model.named_parameters() if "lora_" not in name)
+    for name, value in model.named_buffers():
+        torch.testing.assert_close(value, base[name], rtol=0, atol=0)

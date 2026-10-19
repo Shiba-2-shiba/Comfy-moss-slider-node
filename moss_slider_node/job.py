@@ -1,5 +1,6 @@
 """A single training job owns all models and restores ComfyUI process state."""
 
+from collections.abc import Mapping
 import gc
 import importlib.metadata
 import platform
@@ -20,7 +21,7 @@ _JOB_LOCK = threading.Lock()
 
 
 def run_training_job(checkpoint_path, conditions, config, output_dir, prefix, *, device=None,
-                     progress=None, cancel=None, model_config=None):
+                     progress=None, cancel=None, model_config=None, prompt_source=None):
     import comfy.model_management as management
 
     if not _JOB_LOCK.acquire(blocking=False):
@@ -42,9 +43,14 @@ def run_training_job(checkpoint_path, conditions, config, output_dir, prefix, *,
             config.validate()
             if management.in_training:
                 raise RuntimeError("Another ComfyUI training context is active")
-            if set(conditions) != {"target", "positive", "negative"}:
-                raise ValueError("Exactly target, positive and negative conditioning roles are required")
-            normalized = {name: normalize_conditioning(value) for name, value in conditions.items()}
+            records = [conditions] if isinstance(conditions, Mapping) else conditions
+            if not isinstance(records, (list, tuple)) or not records:
+                raise ValueError("At least one conditioning record is required")
+            normalized = []
+            for record in records:
+                if not isinstance(record, Mapping) or set(record) != {"target", "positive", "negative"}:
+                    raise ValueError("Exactly target, positive and negative conditioning roles are required")
+                normalized.append({name: normalize_conditioning(value) for name, value in record.items()})
             inspection = inspect_checkpoint(checkpoint_path, config=model_config)
             if inspection["status"] != "SUPPORTED":
                 raise ValueError(inspection["reason"])
@@ -55,7 +61,9 @@ def run_training_job(checkpoint_path, conditions, config, output_dir, prefix, *,
             allocated = True
             training_device = torch.device(device) if device is not None else management.get_torch_device()
             compute_dtype = torch.float32 if training_device.type == "cpu" else torch.bfloat16
+            emit("hash", 0, 1, "Hashing checkpoint")
             digest = file_sha256(checkpoint_path, check_cancel)
+            emit("hash", 1, 1, "Checkpoint hash complete")
             model, model_info = load_training_model(
                 checkpoint_path, device=training_device, compute_dtype=compute_dtype,
                 blocks_to_swap=config.blocks_to_swap, config=model_config, cancel=check_cancel,
@@ -72,6 +80,7 @@ def run_training_job(checkpoint_path, conditions, config, output_dir, prefix, *,
                 targets = inject_lora(model, rank=config.rank, alpha=config.alpha, device=training_device)
             adapter = MossTrainingAdapter(model, device=training_device, dtype=compute_dtype,
                                           gradient_checkpointing=config.gradient_checkpointing, cancel=check_cancel)
+            emit("train", 0, config.steps, "Starting training")
             with training_context(model):
                 report = train_slider(
                     adapter, normalized, config, cancel=check_cancel,
@@ -84,8 +93,14 @@ def run_training_job(checkpoint_path, conditions, config, output_dir, prefix, *,
                         "adapter_targets": targets, "internal_adapter_count": len(targets),
                         "qkv_export": "shared_down_matrix_and_three_output_slices",
                         "attention_backend": "pytorch", "real_checkpoint_gpu_validated": False}
+            if prompt_source is not None:
+                manifest["prompt_source"] = prompt_source
+                report["prompt_source"] = prompt_source
             emit("save", 0, 1, "Saving LoRA and manifest")
             lora_path, manifest_path = save_lora(model, output_dir, prefix, manifest)
+            if progress:
+                # The artifact pair has been published; report completion without a new cancellation check.
+                progress("save", 1, 1, "Saved LoRA and manifest")
             return {**report, "steps_completed": len(report["steps"]),
                     "lora_path": Path(lora_path), "manifest_path": Path(manifest_path),
                     "source_sha256": digest, "internal_adapter_count": len(targets)}

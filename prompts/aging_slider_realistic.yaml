@@ -1,0 +1,164 @@
+# Photographic adult female aging slider; positive strength moves from about 35 to about 70.
+# Clothing, pose, hair, lighting, and background are matched within each record.
+# Two close-ups, two waist-up views, and two full-body views. No model-specific trigger is required.
+- target: >-
+    A realistic photograph depicts a fully clothed East Asian adult woman about 35 years old. She
+    has straight black shoulder-length hair with bangs and natural adult body proportions. Her face
+    and neck have smooth adult skin with subtle natural texture and firm contours. A close-up
+    portrait includes her head, neck, and shoulders. She faces the camera with a neutral expression.
+    She wears an opaque dark gray collared blouse. A plain pale gray studio wall fills the
+    background. Soft, even studio light reveals natural facial contours and skin texture.
+  positive: >-
+    A realistic photograph depicts a fully clothed East Asian elderly woman about 70 years old. She
+    has straight black shoulder-length hair with bangs and natural adult body proportions. Her face
+    has visibly aged facial contours, reduced cheek fullness, gently sagging cheeks and jawline,
+    forehead wrinkles, crow's feet, and nasolabial folds. Her neck shows delicate age-related
+    creases. A close-up portrait includes her head, neck, and shoulders. She faces the camera with a
+    neutral expression. She wears an opaque dark gray collared blouse. A plain pale gray studio wall
+    fills the background. Soft, even studio light reveals natural facial contours and skin texture.
+  negative: >-
+    A realistic photograph depicts a fully clothed East Asian adult woman about 35 years old. She
+    has straight black shoulder-length hair with bangs and natural adult body proportions. Her face
+    and neck have smooth adult skin with subtle natural texture and firm contours. A close-up
+    portrait includes her head, neck, and shoulders. She faces the camera with a neutral expression.
+    She wears an opaque dark gray collared blouse. A plain pale gray studio wall fills the
+    background. Soft, even studio light reveals natural facial contours and skin texture.
+
+- target: >-
+    A realistic photograph depicts a fully clothed European adult woman about 35 years old. She has
+    dark brown shoulder-length wavy hair and natural adult body proportions. Her face and neck have
+    smooth adult skin with subtle natural texture and firm contours. A close-up three-quarter
+    portrait includes her head, neck, and shoulders. She looks toward the camera with a relaxed,
+    neutral expression. She wears an opaque cream knit top with a round neckline. A softly blurred
+    beige room forms the background. Broad window light illuminates the face from the side with
+    gentle shadows.
+  positive: >-
+    A realistic photograph depicts a fully clothed European elderly woman about 70 years old. She
+    has dark brown shoulder-length wavy hair and natural adult body proportions. Her face has
+    visibly aged facial contours, reduced cheek fullness, gently sagging cheeks and jawline,
+    forehead wrinkles, crow's feet, and nasolabial folds. Her neck shows delicate age-related
+    creases. A close-up three-quarter portrait includes her head, neck, and shoulders. She looks
+    toward the camera with a relaxed, neutral expression. She wears an opaque cream knit top with a
+    round neckline. A softly blurred beige room forms the background. Broad window light illuminates
+    the face from the side with gentle shadows.
+  negative: >-
+    A realistic photograph depicts a fully clothed European adult woman about 35 years old. She has
+    dark brown shoulder-length wavy hair and natural adult body proportions. Her face and neck have
+    smooth adult skin with subtle natural texture and firm contours. A close-up three-quarter
+    portrait includes her head, neck, and shoulders. She looks toward the camera with a relaxed,
+    neutral expression. She wears an opaque cream knit top with a round neckline. A softly blurred
+    beige room forms the background. Broad window light illuminates the face from the side with
+    gentle shadows.
+
+- target: >-
+    A realistic photograph depicts a fully clothed East Asian adult woman about 35 years old. She
+    has straight black shoulder-length hair with bangs and natural adult body proportions. Her face,
+    neck, and hands have smooth adult skin with subtle natural texture and firm contours. A waist-up
+    portrait includes her head, neck, torso, forearms, and both hands. She sits upright in a gray
+    chair with open hands resting on her lap, looking at the camera with a gentle smile. She wears
+    an opaque black long-sleeved sweater with white sleeve stripes and a small silver pendant. White
+    curtains and a light carpet form the background. Warm window light softly illuminates her face
+    and hands.
+  positive: >-
+    A realistic photograph depicts a fully clothed East Asian elderly woman about 70 years old. She
+    has straight black shoulder-length hair with bangs and natural adult body proportions. Her face
+    has visibly aged facial contours, reduced cheek fullness, gently sagging cheeks and jawline,
+    forehead wrinkles, crow's feet, and nasolabial folds. Her neck and hands show age-related
+    creases and thinner skin. A waist-up portrait includes her head, neck, torso, forearms, and both
+    hands. She sits upright in a gray chair with open hands resting on her lap, looking at the
+    camera with a gentle smile. She wears an opaque black long-sleeved sweater with white sleeve
+    stripes and a small silver pendant. White curtains and a light carpet form the background. Warm
+    window light softly illuminates her face and hands.
+  negative: >-
+    A realistic photograph depicts a fully clothed East Asian adult woman about 35 years old. She
+    has straight black shoulder-length hair with bangs and natural adult body proportions. Her face,
+    neck, and hands have smooth adult skin with subtle natural texture and firm contours. A waist-up
+    portrait includes her head, neck, torso, forearms, and both hands. She sits upright in a gray
+    chair with open hands resting on her lap, looking at the camera with a gentle smile. She wears
+    an opaque black long-sleeved sweater with white sleeve stripes and a small silver pendant. White
+    curtains and a light carpet form the background. Warm window light softly illuminates her face
+    and hands.
+
+- target: >-
+    A realistic photograph depicts a fully clothed South Asian adult woman about 35 years old. She
+    has dark brown hair tied in a low ponytail and natural adult body proportions. Her face, neck,
+    and hands have smooth adult skin with subtle natural texture and firm contours. A waist-up
+    three-quarter portrait includes her head, neck, torso, forearms, and both hands. She sits at a
+    plain wooden table with relaxed hands on the tabletop and a neutral expression. She wears an
+    opaque pale blue long-sleeved shirt. A cream wall forms the background. Diffuse daylight reveals
+    the face, hands, and fabric folds in natural colors.
+  positive: >-
+    A realistic photograph depicts a fully clothed South Asian elderly woman about 70 years old. She
+    has dark brown hair tied in a low ponytail and natural adult body proportions. Her face has
+    visibly aged facial contours, reduced cheek fullness, gently sagging cheeks and jawline,
+    forehead wrinkles, crow's feet, and nasolabial folds. Her neck and hands show age-related
+    creases and thinner skin. A waist-up three-quarter portrait includes her head, neck, torso,
+    forearms, and both hands. She sits at a plain wooden table with relaxed hands on the tabletop
+    and a neutral expression. She wears an opaque pale blue long-sleeved shirt. A cream wall forms
+    the background. Diffuse daylight reveals the face, hands, and fabric folds in natural colors.
+  negative: >-
+    A realistic photograph depicts a fully clothed South Asian adult woman about 35 years old. She
+    has dark brown hair tied in a low ponytail and natural adult body proportions. Her face, neck,
+    and hands have smooth adult skin with subtle natural texture and firm contours. A waist-up
+    three-quarter portrait includes her head, neck, torso, forearms, and both hands. She sits at a
+    plain wooden table with relaxed hands on the tabletop and a neutral expression. She wears an
+    opaque pale blue long-sleeved shirt. A cream wall forms the background. Diffuse daylight reveals
+    the face, hands, and fabric folds in natural colors.
+
+- target: >-
+    A realistic photograph depicts a fully clothed East Asian adult woman about 35 years old. She
+    has straight dark brown shoulder-length hair and natural adult body proportions. Her face, neck,
+    and hands have smooth adult skin with subtle natural texture and firm contours. A centered
+    full-body front view shows her standing upright from head to toe, including both feet and the
+    floor. She has a neutral expression and relaxed arms at her sides, with both hands visible. She
+    wears an opaque gray short-sleeved blouse tucked into a dark ankle-length skirt and plain flat
+    shoes. A pale gray studio wall and bright floor form a simple background. Soft, even light
+    reveals the face, hands, and clothing.
+  positive: >-
+    A realistic photograph depicts a fully clothed East Asian elderly woman about 70 years old. She
+    has straight dark brown shoulder-length hair and natural adult body proportions. Her face has
+    visibly aged facial contours, reduced cheek fullness, gently sagging cheeks and jawline,
+    forehead wrinkles, crow's feet, and nasolabial folds. Her neck and hands show age-related
+    creases and thinner skin. A centered full-body front view shows her standing upright from head
+    to toe, including both feet and the floor. She has a neutral expression and relaxed arms at her
+    sides, with both hands visible. She wears an opaque gray short-sleeved blouse tucked into a dark
+    ankle-length skirt and plain flat shoes. A pale gray studio wall and bright floor form a simple
+    background. Soft, even light reveals the face, hands, and clothing.
+  negative: >-
+    A realistic photograph depicts a fully clothed East Asian adult woman about 35 years old. She
+    has straight dark brown shoulder-length hair and natural adult body proportions. Her face, neck,
+    and hands have smooth adult skin with subtle natural texture and firm contours. A centered
+    full-body front view shows her standing upright from head to toe, including both feet and the
+    floor. She has a neutral expression and relaxed arms at her sides, with both hands visible. She
+    wears an opaque gray short-sleeved blouse tucked into a dark ankle-length skirt and plain flat
+    shoes. A pale gray studio wall and bright floor form a simple background. Soft, even light
+    reveals the face, hands, and clothing.
+
+- target: >-
+    A realistic photograph depicts a fully clothed Black adult woman about 35 years old. She has
+    black shoulder-length curly hair and natural adult body proportions. Her face, neck, and hands
+    have smooth adult skin with subtle natural texture and firm contours. A full-body three-quarter
+    view includes her entire seated figure, both feet, and the chair legs. She sits upright on a
+    wooden chair with her hands resting separately on her knees and a neutral expression. She wears
+    an opaque cream long-sleeved top, straight navy trousers, and plain dark shoes. A light beige
+    wall and matte wooden floor form the background. Broad window light creates gentle shadows and
+    natural skin tones.
+  positive: >-
+    A realistic photograph depicts a fully clothed Black elderly woman about 70 years old. She has
+    black shoulder-length curly hair and natural adult body proportions. Her face has visibly aged
+    facial contours, reduced cheek fullness, gently sagging cheeks and jawline, forehead wrinkles,
+    crow's feet, and nasolabial folds. Her neck and hands show age-related creases and thinner skin.
+    A full-body three-quarter view includes her entire seated figure, both feet, and the chair legs.
+    She sits upright on a wooden chair with her hands resting separately on her knees and a neutral
+    expression. She wears an opaque cream long-sleeved top, straight navy trousers, and plain dark
+    shoes. A light beige wall and matte wooden floor form the background. Broad window light creates
+    gentle shadows and natural skin tones.
+  negative: >-
+    A realistic photograph depicts a fully clothed Black adult woman about 35 years old. She has
+    black shoulder-length curly hair and natural adult body proportions. Her face, neck, and hands
+    have smooth adult skin with subtle natural texture and firm contours. A full-body three-quarter
+    view includes her entire seated figure, both feet, and the chair legs. She sits upright on a
+    wooden chair with her hands resting separately on her knees and a neutral expression. She wears
+    an opaque cream long-sleeved top, straight navy trousers, and plain dark shoes. A light beige
+    wall and matte wooden floor form the background. Broad window light creates gentle shadows and
+    natural skin tones.

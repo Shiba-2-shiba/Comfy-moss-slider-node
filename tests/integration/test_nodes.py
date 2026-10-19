@@ -21,7 +21,7 @@ def test_v3_registration_schema_and_non_cached_training(plugin):
     extension = asyncio.run(plugin.comfy_entrypoint())
     nodes = asyncio.run(extension.get_node_list())
     definitions = {cls.define_schema().node_id: cls for cls in nodes}
-    assert set(definitions) == {"MossSliderInspect", "MossSliderTrain", "MossSliderApply"}
+    assert set(definitions) == {"MossSliderInspect", "MossSliderTrain", "MossSliderTrainFromPrompts", "MossSliderApply"}
     for cls in nodes:
         schema = cls.define_schema()
         assert schema.category and schema.description and schema.display_name
@@ -54,6 +54,101 @@ def test_train_node_forwards_settings_and_returns_relative_lora_path(plugin, mon
     assert calls["config"].rank == 2 and calls["config"].blocks_to_swap == 1
     assert output.result[0] == "moss_sliders/slider.safetensors"
     assert "steps_completed" in output.result[1]
+
+
+def test_yaml_training_node_exposes_file_selection_and_reuses_training_settings(plugin):
+    extension = asyncio.run(plugin.comfy_entrypoint())
+    definitions = {cls.define_schema().node_id: cls for cls in asyncio.run(extension.get_node_list())}
+    cls = definitions["MossSliderTrainFromPrompts"]
+    schema = cls.define_schema()
+    info = schema.get_v1_info(cls)
+    required = info.input["required"]
+    assert "clip" in required and "prompt_yaml" in required
+    assert "target_conditioning" not in required
+    assert "aging_slider_fullbody.yaml" in required["prompt_yaml"][1]["options"]
+    assert schema.is_output_node and schema.not_idempotent
+    assert required["rollout_steps"] == definitions["MossSliderTrain"].define_schema().get_v1_info(
+        definitions["MossSliderTrain"]).input["required"]["rollout_steps"]
+
+
+def test_yaml_node_encodes_every_record_and_exports_the_selected_snapshot(plugin, monkeypatch, tmp_path):
+    import json
+    import torch
+
+    asyncio.run(plugin.comfy_entrypoint())
+    module = sys.modules[plugin.__name__ + ".nodes"]
+    calls = {}
+
+    class Clip:
+        def tokenize(self, text):
+            return text
+
+        def encode_from_tokens_scheduled(self, tokens):
+            return [[torch.ones(1, 2, 4096), {}]]
+
+    def fake_job(checkpoint_path, records, config, output_dir, prefix, **kwargs):
+        calls.update(records=records, config=config, source=kwargs["prompt_source"])
+        output = Path(output_dir) / "preset.safetensors"
+        return {"lora_path": output, "manifest_path": output.with_suffix(".json"), "steps_completed": config.steps}
+
+    monkeypatch.setattr(module, "run_training_job", fake_job)
+    monkeypatch.setattr(module.folder_paths, "get_full_path_or_raise", lambda category, name: str(tmp_path / name))
+    monkeypatch.setattr(module.folder_paths, "get_output_directory", lambda: str(tmp_path))
+    result = module.MossSliderTrainFromPrompts.execute("moss.safetensors", Clip(), "aging_slider_fullbody.yaml",
+                                                     steps=6, rank=2, alpha=2, width=256, height=256)
+    assert len(calls["records"]) == 6
+    assert all(set(record) == {"target", "positive", "negative"} for record in calls["records"])
+    assert calls["source"]["file"] == "aging_slider_fullbody.yaml"
+    assert len(calls["source"]["records"]) == 6 and len(calls["source"]["sha256"]) == 64
+    assert calls["config"].steps == 6
+    assert result.result[0] == "moss_sliders/preset.safetensors"
+    assert json.loads(result.result[1])["steps_completed"] == 6
+    assert result.ui["text"][0] == f"LoRA: {tmp_path / 'moss_sliders' / 'preset.safetensors'}"
+    assert result.ui["text"][-1] == "Prompts: aging_slider_fullbody.yaml (6 records)"
+
+
+def test_training_progress_logs_step_time_without_mixing_load_counts(plugin, monkeypatch, tmp_path, caplog):
+    import logging
+
+    asyncio.run(plugin.comfy_entrypoint())
+    module = sys.modules[plugin.__name__ + ".nodes"]
+    updates = []
+
+    class Bar:
+        def __init__(self, total):
+            pass
+
+        def update_absolute(self, current, total):
+            updates.append((current, total))
+
+    def fake_job(checkpoint_path, records, config, output_dir, prefix, **kwargs):
+        progress = kwargs["progress"]
+        progress("prepare", 0, 1, "Unloading inference models")
+        progress("hash", 0, 1, "Hashing checkpoint")
+        progress("load", 0, 378, "Loading a weight")
+        progress("load", 377, 378, "Loading the last weight")
+        progress("train", 0, 3, "Starting training")
+        progress("train", 1, 3, {"loss": 0.125, "grad_norm": 0.25, "seconds": 2.5,
+                                  "elapsed_seconds": 2.5, "eta_seconds": 5.0})
+        progress("save", 0, 1, "Saving LoRA and manifest")
+        progress("save", 1, 1, "Saved LoRA and manifest")
+        output = Path(output_dir) / "progress.safetensors"
+        return {"lora_path": output, "manifest_path": output.with_suffix(".json"), "steps_completed": 1}
+
+    monkeypatch.setattr(module, "ProgressBar", Bar)
+    monkeypatch.setattr(module, "run_training_job", fake_job)
+    monkeypatch.setattr(module.folder_paths, "get_full_path_or_raise", lambda category, name: str(tmp_path / name))
+    monkeypatch.setattr(module.folder_paths, "get_output_directory", lambda: str(tmp_path))
+    with caplog.at_level(logging.INFO):
+        module.MossSliderTrain.execute("moss.safetensors", [], [], [], steps=3)
+    assert updates and all(total == 3 for _, total in updates)
+    assert (1, 3) in updates
+    assert "step 1/3" in caplog.text
+    assert "2.50s/step" in caplog.text
+    assert "ETA 5.0s" in caplog.text
+    assert "loss=0.125" in caplog.text
+    assert "Hashing checkpoint" in caplog.text
+    assert "Saved LoRA and manifest" in caplog.text
 
 
 @pytest.mark.parametrize("registered_lora_root", [False, True])

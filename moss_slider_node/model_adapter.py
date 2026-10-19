@@ -40,8 +40,17 @@ def create_native_model(config, *, device="meta", dtype=torch.bfloat16):
     import comfy.ops
     from comfy.ldm.moss_image.model import MOSSImage
 
+    class TrainingLinear(comfy.ops.manual_cast.Linear):
+        def __init__(self, in_features, out_features, bias=True, device=None, dtype=None):
+            # The private loader needs registered meta parameters even when aimdo
+            # enables lazy inference initialization. Keep manual_cast execution.
+            torch.nn.Linear.__init__(self, in_features, out_features, bias, device=device, dtype=dtype)
+
+    class TrainingOps(comfy.ops.manual_cast):
+        Linear = TrainingLinear
+
     return MOSSImage(**asdict(config), fused_qkv=True, device=device, dtype=dtype,
-                     operations=comfy.ops.manual_cast)
+                     operations=TrainingOps)
 
 
 @contextmanager

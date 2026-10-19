@@ -13,10 +13,45 @@ from .moss_slider_node.checkpoint import inspect_checkpoint
 from .moss_slider_node.inference import apply_slider
 from .moss_slider_node.job import run_training_job
 from .moss_slider_node.training import TrainingConfig
+from .moss_slider_node.prompt_files import encode_prompt_records, list_prompt_files, load_prompt_file
 
 
 LOGGER = logging.getLogger(__name__)
 _CATEGORY = "MOSS Image/Slider LoRA"
+_PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
+
+
+def _run_training(checkpoint_name, conditions, config, output_prefix, prompt_source=None):
+    checkpoint_path = folder_paths.get_full_path_or_raise("diffusion_models", checkpoint_name)
+    root = Path(folder_paths.get_output_directory())
+    bar = ProgressBar(config.steps)
+
+    def progress(phase, current, total, details):
+        if phase == "train":
+            bar.update_absolute(current, total)
+            if current == 0:
+                LOGGER.info("MOSS Slider starting training: 0/%d steps", total)
+            else:
+                LOGGER.info("MOSS Slider step %d/%d | %.2fs/step | elapsed %.1fs | ETA %.1fs | loss=%.6g grad=%.5g",
+                            current, total, details["seconds"], details["elapsed_seconds"],
+                            details["eta_seconds"], details["loss"], details["grad_norm"])
+        elif phase == "load":
+            if current == 0 or current == total - 1 or current % max(1, total // 10) == 0:
+                LOGGER.info("MOSS Slider loading model %d/%d: %s", current, total, details)
+        else:
+            if phase == "prepare":
+                bar.update_absolute(0, config.steps)
+            LOGGER.info("MOSS Slider %s", details)
+
+    result = run_training_job(checkpoint_path, conditions, config, root / "moss_sliders", output_prefix,
+                              cancel=throw_exception_if_processing_interrupted, progress=progress,
+                              prompt_source=prompt_source)
+    filename = result["lora_path"].relative_to(root).as_posix()
+    report = {key: str(value) if isinstance(value, Path) else value for key, value in result.items()}
+    LOGGER.info("MOSS Slider saved LoRA: %s", result["lora_path"])
+    LOGGER.info("MOSS Slider saved manifest: %s", result["manifest_path"])
+    return io.NodeOutput(filename, json.dumps(report, ensure_ascii=False, indent=2),
+                         ui={"text": [f"LoRA: {result['lora_path']}", f"Manifest: {result['manifest_path']}"]})
 
 
 class MossSliderInspect(io.ComfyNode):
@@ -70,27 +105,52 @@ class MossSliderTrain(io.ComfyNode):
                 steps=100, rank=8, alpha=8.0, learning_rate=0.0001, eta=1.0, seed=0,
                 width=512, height=512, rollout_steps=8, gradient_checkpointing=True,
                 blocks_to_swap=0, output_prefix="moss_slider"):
-        checkpoint_path = folder_paths.get_full_path_or_raise("diffusion_models", checkpoint_name)
-        root = Path(folder_paths.get_output_directory())
-        output_dir = root / "moss_sliders"
         config = TrainingConfig(steps=steps, rank=rank, alpha=alpha, learning_rate=learning_rate, eta=eta,
                                 seed=seed, width=width, height=height, rollout_steps=rollout_steps,
                                 gradient_checkpointing=gradient_checkpointing, blocks_to_swap=blocks_to_swap)
-        bar = ProgressBar(steps)
+        return _run_training(checkpoint_name, {"target": target_conditioning, "positive": positive_conditioning,
+                                               "negative": negative_conditioning}, config, output_prefix)
 
-        def progress(_phase, current, total, _details):
+
+class MossSliderTrainFromPrompts(io.ComfyNode):
+    @classmethod
+    def define_schema(cls):
+        schema = MossSliderTrain.define_schema()
+        schema.node_id = "MossSliderTrainFromPrompts"
+        schema.display_name = "MOSS Slider Train from Prompts"
+        schema.description = ("Select a YAML from this repository's prompts folder and connect a native MOSS CLIP. "
+                              "All target/positive/negative records are used in order, one record per optimizer step. "
+                              "Steps is the total update count. Anchor/neutral losses are not supported.")
+        schema.inputs = [item for item in schema.inputs if item.id not in
+                         {"target_conditioning", "positive_conditioning", "negative_conditioning"}]
+        schema.inputs[1:1] = [io.Clip.Input("clip"),
+                             io.Combo.Input("prompt_yaml", options=list_prompt_files(_PROMPTS_DIR),
+                                            tooltip="YAML files in this repository's prompts folder. All records are used.")]
+        return schema
+
+    @classmethod
+    def fingerprint_inputs(cls, prompt_yaml, **kwargs):
+        return load_prompt_file(_PROMPTS_DIR, prompt_yaml).sha256
+
+    @classmethod
+    def execute(cls, checkpoint_name, clip, prompt_yaml, output_prefix="moss_slider", **settings):
+        config = TrainingConfig(**settings)
+        config.validate()
+        snapshot = load_prompt_file(_PROMPTS_DIR, prompt_yaml)
+        bar = ProgressBar(len(snapshot.records) * 3)
+        LOGGER.info("MOSS Slider encoding prompts: 0/%d records (%s)", len(snapshot.records), snapshot.name)
+
+        def encoding_progress(current, total):
             bar.update_absolute(current, total)
+            if current % 3 == 0:
+                LOGGER.info("MOSS Slider encoding prompts: %d/%d records", current // 3, total // 3)
 
-        result = run_training_job(
-            checkpoint_path, {"target": target_conditioning, "positive": positive_conditioning,
-                              "negative": negative_conditioning}, config, output_dir, output_prefix,
-            cancel=throw_exception_if_processing_interrupted, progress=progress)
-        filename = result["lora_path"].relative_to(root).as_posix()
-        report = {key: str(value) if isinstance(value, Path) else value for key, value in result.items()}
-        LOGGER.info("MOSS Slider saved LoRA: %s", result["lora_path"])
-        LOGGER.info("MOSS Slider saved manifest: %s", result["manifest_path"])
-        return io.NodeOutput(filename, json.dumps(report, ensure_ascii=False, indent=2),
-                             ui={"text": [f"LoRA: {result['lora_path']}", f"Manifest: {result['manifest_path']}"]})
+        conditions = encode_prompt_records(clip, snapshot.records, cancel=throw_exception_if_processing_interrupted,
+                                            progress=encoding_progress)
+        source = {"file": snapshot.name, "sha256": snapshot.sha256, "records": snapshot.records}
+        output = _run_training(checkpoint_name, conditions, config, output_prefix, prompt_source=source)
+        return io.NodeOutput(*output.result, ui={"text": [*output.ui["text"],
+                             f"Prompts: {snapshot.name} ({len(snapshot.records)} records)"]})
 
 
 class MossSliderApply(io.ComfyNode):
@@ -113,4 +173,4 @@ class MossSliderApply(io.ComfyNode):
 
 class MossSliderExtension(ComfyExtension):
     async def get_node_list(self):
-        return [MossSliderInspect, MossSliderTrain, MossSliderApply]
+        return [MossSliderInspect, MossSliderTrain, MossSliderTrainFromPrompts, MossSliderApply]
