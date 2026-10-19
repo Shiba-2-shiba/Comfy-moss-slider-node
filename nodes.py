@@ -1,6 +1,7 @@
 """V3 nodes for inspecting, training and applying MOSS-Image sliders."""
 
 import json
+import logging
 from pathlib import Path
 
 import folder_paths
@@ -14,6 +15,7 @@ from .moss_slider_node.job import run_training_job
 from .moss_slider_node.training import TrainingConfig
 
 
+LOGGER = logging.getLogger(__name__)
 _CATEGORY = "MOSS Image/Slider LoRA"
 
 
@@ -41,7 +43,8 @@ class MossSliderTrain(io.ComfyNode):
             node_id="MossSliderTrain", display_name="MOSS Slider Train INT8", category=_CATEGORY,
             description="Train a single slider on a frozen ConvRot INT8 MOSS base. Each role requires one batch-1 "
                         "MOSS conditioning entry; scheduled, area, control and hook conditioning are unsupported. "
-                        "Outputs a LoRA filename for MOSS Slider Apply and a training report.",
+                        "Saves LoRA and manifest to ComfyUI output/moss_sliders and returns an output-relative "
+                        "filename and a training report. Copy both files to a registered LoRA folder for inference.",
             inputs=[
                 io.Combo.Input("checkpoint_name", options=folder_paths.get_filename_list("diffusion_models")),
                 io.Conditioning.Input("target_conditioning"), io.Conditioning.Input("positive_conditioning"),
@@ -68,10 +71,7 @@ class MossSliderTrain(io.ComfyNode):
                 width=512, height=512, rollout_steps=8, gradient_checkpointing=True,
                 blocks_to_swap=0, output_prefix="moss_slider"):
         checkpoint_path = folder_paths.get_full_path_or_raise("diffusion_models", checkpoint_name)
-        roots = folder_paths.get_folder_paths("loras")
-        if not roots:
-            raise ValueError("No ComfyUI LoRA output directory is registered")
-        root = Path(roots[0])
+        root = Path(folder_paths.get_output_directory())
         output_dir = root / "moss_sliders"
         config = TrainingConfig(steps=steps, rank=rank, alpha=alpha, learning_rate=learning_rate, eta=eta,
                                 seed=seed, width=width, height=height, rollout_steps=rollout_steps,
@@ -87,7 +87,10 @@ class MossSliderTrain(io.ComfyNode):
             cancel=throw_exception_if_processing_interrupted, progress=progress)
         filename = result["lora_path"].relative_to(root).as_posix()
         report = {key: str(value) if isinstance(value, Path) else value for key, value in result.items()}
-        return io.NodeOutput(filename, json.dumps(report, ensure_ascii=False, indent=2))
+        LOGGER.info("MOSS Slider saved LoRA: %s", result["lora_path"])
+        LOGGER.info("MOSS Slider saved manifest: %s", result["manifest_path"])
+        return io.NodeOutput(filename, json.dumps(report, ensure_ascii=False, indent=2),
+                             ui={"text": [f"LoRA: {result['lora_path']}", f"Manifest: {result['manifest_path']}"]})
 
 
 class MossSliderApply(io.ComfyNode):

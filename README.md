@@ -29,7 +29,7 @@ MOSS-ImageのConvRot INT8モデルを凍結し、テキストの方向を制御�
 1. 標準の`Load CLIP`でMOSS用text encoderを読み、typeを`moss_image`にします。
 2. 3個の`CLIP Text Encode`を作り、target/positive/negativeへ接続します。例: target=`portrait of an adult person`、positive=`portrait of an elderly adult person`、negative=`portrait of a young adult person`。
 3. Trainの`checkpoint_name`へ指定INT8基底を選びます。まずrank 2・小解像度・1 stepの実機smokeから段階的に増やしてください。
-4. 学習完了後、推論用workflowでApplyの`lora_name`に保存名を選び、標準`Load Diffusion Model`から**同じ基底**をMODELへ接続します。
+4. 学習完了後、`output/moss_sliders/`のLoRAと同名JSONを、使用するLoRAフォルダーへ一緒にコピーし、ComfyUIのモデル一覧を更新します。推論用workflowでApplyの`lora_name`にコピー先の保存名を選び、標準`Load Diffusion Model`から**同じ基底**をMODELへ接続します。
 5. ApplyのMODELを通常のMOSS samplerへ渡します。画像確認にはFlux2 VAEを使用します。
 
 Trainはqueueごとに学習する出力ノードです。画像比較では保存済みLoRAをApplyで読み、学習用と推論用workflowを分けます。
@@ -62,7 +62,7 @@ LoRA強度0は基底に一致し、負値も適用できます。単方向学習
 
 ## 保存と推論
 
-出力は最初の登録済みLoRAディレクトリ内の`moss_sliders/`です。同名ファイルは上書きせずsuffixを付けます。`.safetensors`と同名の`.json`を同じ名前のまま一緒に保持してください。manifestには基底全体とLoRA本体のSHA256、設定、実行版、loss、使用した時刻等を記録します。JSONを配置してから完成したLoRAを最終名へrenameするcommit方式です。プロセスが途中終了しても、JSONなしの未完成LoRAを最終名で公開しません。孤立JSON等が残った場合も再実行は既存名を上書きしません。
+出力はComfyUIに設定されたoutputディレクトリ内の`moss_sliders/`です。現在の環境では`C:\ComfyUI\output\moss_sliders\`になります。追加モデルパスやLoRA検索先の登録順には依存しません。保存先のフルパスはノードの表示、ログ、reportの`lora_path`と`manifest_path`で確認できます。`lora_name`出力はoutputからの相対パスです。Applyや標準LoRA loaderで使用するには、LoRAと同名JSONを登録済みLoRAフォルダーへ一緒にコピーし、モデル一覧を更新してください。同名ファイルは上書きせずsuffixを付けます。`.safetensors`と同名の`.json`を同じ名前のまま一緒に保持してください。manifestには基底全体とLoRA本体のSHA256、設定、実行版、loss、使用した時刻等を記録します。JSONを配置してから完成したLoRAを最終名へrenameするcommit方式です。プロセスが途中終了しても、JSONなしの未完成LoRAを最終名で公開しません。孤立JSON等が残った場合も再実行は既存名を上書きしません。
 
 専用Applyは標準`Load Diffusion Model`由来のMODELから基底を識別し、manifestのSHA256と照合します。別基底・既存LoRAでpatch済みのMODEL・manifest欠落を拒否します。QKVをpackedキーへ戻してComfyUIのbypassを使い、weight mergeや再量子化を行いません。
 
