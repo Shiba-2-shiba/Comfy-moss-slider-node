@@ -177,6 +177,12 @@
           "name": "negative_conditioning",
           "type": "CONDITIONING",
           "link": 6
+        },
+        {
+          "name": "neutral_conditioning",
+          "type": "CONDITIONING",
+          "link": null,
+          "shape": 7
         }
       ],
       "outputs": [
@@ -207,7 +213,8 @@
         8,
         true,
         0,
-        "moss_aging_portrait"
+        "moss_aging_portrait",
+        "neutral_l2"
       ]
     }
   ],

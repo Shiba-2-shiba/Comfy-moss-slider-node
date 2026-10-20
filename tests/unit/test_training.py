@@ -107,6 +107,64 @@ def test_shifted_sigma_schedule_uses_the_native_shift_once():
     assert schedule[3].item() == pytest.approx(5 / 6)
 
 
+def test_none_ignores_neutral_and_matches_legacy_path(monkeypatch):
+    import moss_slider_node.training as training
+
+    monkeypatch.setattr(training, "normalize_teacher_l2", lambda *_: pytest.fail("none must bypass normalization"))
+    config = TrainingConfig(steps=3, rank=2, alpha=2, width=16, height=16,
+                            rollout_steps=3, seed=7, teacher_normalization="none")
+    first, second = _toy(31), _toy(31)
+    first_report = train_slider(first, _conditions(), config)
+    records = {**_conditions(), "neutral": torch.full((1, 4, 5), 2.)}
+    second_report = train_slider(second, records, config)
+    assert _numerical_steps(first_report) == _numerical_steps(second_report)
+    for a, b in zip(lora_parameters(first.native_model), lora_parameters(second.native_model)):
+        torch.testing.assert_close(a, b, rtol=0, atol=0)
+    assert len(first.calls) == len(second.calls)
+
+
+@pytest.mark.parametrize("explicit", [False, True])
+def test_neutral_teacher_matches_independent_formula_and_records_reference(explicit):
+    conditions = _conditions()
+    if explicit:
+        conditions["neutral"] = torch.full((1, 4, 5), 2.)
+    model = _toy(31)
+    report = train_slider(model, conditions, TrainingConfig(steps=1, width=16, height=16, rollout_steps=1))
+    student_calls = [c for c in model.calls if c["grad"]]
+    assert len(student_calls) == 1 and student_calls[0]["multipliers"] == [1., 1.]
+    x = student_calls[0]["x"]
+    raw = x + 1.
+    reference = x + (.2 if explicit else 0.)
+    scale = reference.norm() / raw.norm()
+    expected_loss = ((x - raw * scale) ** 2).mean().item()
+    assert report["steps"][0]["loss"] == pytest.approx(expected_loss)
+    info = report["steps"][0]["teacher_normalization_info"]
+    assert info["reference_source"] == ("neutral" if explicit else "target")
+    assert info["scale"] == pytest.approx(scale.item()) and not info["skipped"]
+    assert report["teacher_normalization"]["mode"] == "neutral_l2"
+    teachers = [c for c in model.calls if not c["grad"]]
+    assert len(teachers) == (4 if explicit else 3)
+    assert all(c["multipliers"] == [0., 0.] for c in teachers)
+
+
+def test_identical_explicit_neutral_reuses_target_teacher():
+    conditions = _conditions()
+    conditions["neutral"] = conditions["target"].clone()
+    model = _toy(31)
+    report = train_slider(model, conditions, TrainingConfig(steps=1, width=16, height=16, rollout_steps=1))
+    assert len([c for c in model.calls if not c["grad"]]) == 3
+    assert report["steps"][0]["teacher_normalization_info"]["reference_source"] == "neutral"
+
+
+def test_eta_zero_still_normalizes_to_a_distinct_neutral():
+    conditions = {**_conditions(), "neutral": torch.full((1, 4, 5), 2.)}
+    model = _toy(31)
+    report = train_slider(model, conditions, TrainingConfig(steps=1, width=16, height=16, rollout_steps=1, eta=0))
+    x = next(c["x"] for c in model.calls if c["grad"])
+    expected_scale = (x + .2).norm() / x.norm()
+    assert report["steps"][0]["loss"] == pytest.approx(((x - x * expected_scale) ** 2).mean().item())
+
+
 def test_sigma_schedule_rejects_invalid_step_counts():
     for value in (0, -1, 1.5, True):
         with pytest.raises((TypeError, ValueError), match="steps"):

@@ -26,7 +26,8 @@ def run_training_job(checkpoint_path, conditions, config, output_dir, prefix, *,
 
     if not _JOB_LOCK.acquire(blocking=False):
         raise RuntimeError("A MOSS slider training job is already running")
-    model = adapter = normalized = None
+    model = adapter = None
+    normalized: list[dict[str, torch.Tensor]] | None = None
     allocated = False
 
     def check_cancel():
@@ -48,8 +49,10 @@ def run_training_job(checkpoint_path, conditions, config, output_dir, prefix, *,
                 raise ValueError("At least one conditioning record is required")
             normalized = []
             for record in records:
-                if not isinstance(record, Mapping) or set(record) != {"target", "positive", "negative"}:
-                    raise ValueError("Exactly target, positive and negative conditioning roles are required")
+                required = {"target", "positive", "negative"}
+                if (not isinstance(record, Mapping) or not required.issubset(record)
+                        or set(record) - (required | {"neutral"})):
+                    raise ValueError("Target, positive and negative conditioning roles and optional neutral are required")
                 normalized.append({name: normalize_conditioning(value) for name, value in record.items()})
             inspection = inspect_checkpoint(checkpoint_path, config=model_config)
             if inspection["status"] != "SUPPORTED":

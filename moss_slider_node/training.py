@@ -24,8 +24,11 @@ class TrainingConfig:
     gradient_checkpointing: bool = True
     blocks_to_swap: int = 0
     max_grad_norm: float = 1.0
+    teacher_normalization: str = "neutral_l2"
 
     def validate(self) -> None:
+        if not isinstance(self.teacher_normalization, str) or self.teacher_normalization not in ("none", "neutral_l2"):
+            raise ValueError("teacher_normalization must be none or neutral_l2")
         _positive_int("steps", self.steps)
         _positive_int("rank", self.rank)
         if self.rank > 128:
@@ -78,6 +81,29 @@ def make_sigma_schedule(steps: int, device: torch.device | str = "cpu") -> Tenso
 def slider_teacher(base: Tensor, positive: Tensor, negative: Tensor, eta: float) -> Tensor:
     _finite("eta", eta)
     return (base + float(eta) * (positive - negative)).detach()
+
+
+@torch.no_grad()
+def normalize_teacher_l2(teacher: Tensor, reference: Tensor) -> tuple[Tensor, dict[str, Tensor]]:
+    if (not isinstance(teacher, Tensor) or not isinstance(reference, Tensor)
+            or teacher.shape != reference.shape or teacher.device != reference.device
+            or teacher.ndim < 2 or teacher.numel() == 0):
+        raise ValueError("Teacher and neutral reference must have matching nonempty batched shapes and devices")
+    if (not teacher.is_floating_point() or not reference.is_floating_point()
+            or not torch.isfinite(teacher).all() or not torch.isfinite(reference).all()):
+        raise ValueError("Teacher and neutral reference must be finite floating-point tensors")
+    raw, neutral = teacher.detach().float(), reference.detach().float()
+    teacher_l2 = raw.flatten(1).norm(dim=1)
+    reference_l2 = neutral.flatten(1).norm(dim=1)
+    if not torch.isfinite(teacher_l2).all() or not torch.isfinite(reference_l2).all():
+        raise RuntimeError("Non-finite teacher normalization norm")
+    skipped = (teacher_l2 <= 1e-8) | (reference_l2 <= 1e-8)
+    scale = torch.where(skipped, torch.ones_like(teacher_l2), reference_l2 / teacher_l2.clamp_min(1e-8))
+    output = raw * scale.reshape(-1, *([1] * (raw.ndim - 1)))
+    if not torch.isfinite(scale).all() or not torch.isfinite(output).all():
+        raise RuntimeError("Non-finite teacher normalization result")
+    return output, {"teacher_l2": teacher_l2, "reference_l2": reference_l2,
+                    "scale": scale, "skipped": skipped}
 
 
 def train_slider(
@@ -143,8 +169,13 @@ def train_slider(
         "progress_callback": "progress(completed_step, total_steps, step_details)",
         "record_count": len(prepared_records),
         "record_schedule": "round_robin",
+        "teacher_normalization": {"mode": config.teacher_normalization},
         "steps": [],
     }
+    if config.teacher_normalization == "neutral_l2":
+        report["teacher_normalization"].update(
+            epsilon=1e-8, reduction="per_sample_non_batch_l2",
+            degenerate_policy="skip_if_either_norm_le_epsilon", dtype="float32")
 
     def check_cancel() -> None:
         if cancel is not None:
@@ -156,8 +187,16 @@ def train_slider(
             check_cancel()
             tick = perf_counter()
             record_index = step % len(prepared_records)
-            prepared_conditions = {role: value.to(device=device)
-                                   for role, value in prepared_records[record_index].items()}
+            record = prepared_records[record_index]
+            roles = ["target", "positive", "negative"]
+            if config.teacher_normalization == "neutral_l2" and "neutral" in record:
+                # Bundled presets use neutral=target; compare on CPU before transferring
+                # so these explicit references need no extra model forward or GPU copy.
+                neutral, target = record["neutral"], record["target"]
+                if neutral.dtype != target.dtype or not torch.equal(neutral, target):
+                    roles.append("neutral")
+            prepared_conditions = {role: record[role].to(device=device) for role in roles}
+            normalization_info = None
             timestep_index = int(
                 torch.randint(0, config.rollout_steps, (1,), generator=sample_generator).item()
             )
@@ -186,12 +225,26 @@ def train_slider(
                     prediction = model.predict_velocity(x, sigma, prepared_conditions[role])
                     _validate_prediction(prediction, x, f"{role} teacher")
                     teacher_predictions[role] = prediction.detach()
-                teacher = slider_teacher(
-                    teacher_predictions["target"],
-                    teacher_predictions["positive"],
-                    teacher_predictions["negative"],
-                    config.eta,
-                )
+                if config.teacher_normalization == "none":
+                    teacher = slider_teacher(teacher_predictions["target"], teacher_predictions["positive"],
+                                             teacher_predictions["negative"], config.eta)
+                else:
+                    reference_source = "neutral" if "neutral" in record else "target"
+                    if "neutral" in prepared_conditions:
+                        check_cancel()
+                        reference = model.predict_velocity(x, sigma, prepared_conditions["neutral"])
+                        _validate_prediction(reference, x, "neutral teacher")
+                    else:
+                        reference = teacher_predictions["target"]
+                    raw_teacher = slider_teacher(teacher_predictions["target"].float(),
+                                                 teacher_predictions["positive"].float(),
+                                                 teacher_predictions["negative"].float(), config.eta)
+                    teacher, stats = normalize_teacher_l2(raw_teacher, reference)
+                    normalization_info = {"reference_source": reference_source,
+                                          "teacher_l2": float(stats["teacher_l2"][0]),
+                                          "reference_l2": float(stats["reference_l2"][0]),
+                                          "scale": float(stats["scale"][0]),
+                                          "skipped": bool(stats["skipped"][0])}
 
             optimizer.zero_grad(set_to_none=True)
             check_cancel()
@@ -227,6 +280,8 @@ def train_slider(
                 "noise_sequence_index": step,
                 "teacher_requires_grad": teacher.requires_grad,
             }
+            if normalization_info is not None:
+                entry["teacher_normalization_info"] = normalization_info
             if device.type == "cuda":
                 # ROCm uses the CUDA API too. Include queued optimizer work in wall time.
                 torch.cuda.synchronize(device)
@@ -252,8 +307,12 @@ def _validate_conditions(
     missing = required.difference(conditions)
     if missing:
         raise ValueError(f"conditions are missing roles: {sorted(missing)}")
+    if set(conditions) - (required | {"neutral"}):
+        raise ValueError("Unknown conditioning role; only target, positive, negative and optional neutral are supported")
     prepared: dict[str, Tensor] = {}
-    for role in ("target", "positive", "negative"):
+    for role in ("target", "positive", "negative", "neutral"):
+        if role not in conditions:
+            continue
         value = conditions[role]
         if not isinstance(value, Tensor):
             raise TypeError(f"conditions[{role!r}] must be a tensor")

@@ -6,6 +6,8 @@ MOSS-ImageのConvRot INT8モデルを凍結し、テキストの方向を制御�
 
 2026-10-19の互換対応後: **169 tests passed**、構文・差分チェックPASS。ruff/mypyは現在の環境に未導入のため今回未実行。初期実装時の133件・静的解析結果は[以前の検証概要](docs/validation.json)を参照してください。
 
+2026-10-20のneutral L2正規化対応: **CPU 213 tests passed**、ruff・mypy・構文検査PASS。既定は`neutral_l2`、同梱全36レコードにneutralを追加しました。今回のGPU学習・画質評価は未実施です。[CPU検証レポート](test-results/neutral-l2/cpu-validation.json)。
+
 ## 必要な環境
 
 - Python 3.10以上、PyTorch 2.9以上、safetensors 0.7以上。
@@ -69,11 +71,18 @@ MOSS Slider step 2/6 | 1.30s/step | elapsed 4.6s | ETA 9.2s | loss=0.0239832 gra
 | `rank` / `alpha` | LoRA rankと`alpha/rank`係数。既定8 / 8 |
 | `learning_rate` | AdamWの学習率。既定1e-4、weight decayは0 |
 | `eta` | teacherの`positive-negative`方向の強さ。samplerのCFG値とは別 |
+| `teacher_normalization` | 既定`neutral_l2`。教師全体のL2ノルムをneutralに合わせる。`none`で従来の教師式を使用 |
 | `rollout_steps` | native shift=5のEuler schedule。既定8 |
 | `gradient_checkpointing` | block単位のnon-reentrant再計算。既定有効 |
 | `blocks_to_swap` | 末尾N blockのI8/scaleをCPUに残し、Linearごとに同期転送。0〜42 |
 
-teacherはLoRA無効の同じ量子化基底から作ります。`teacher=base(target)+eta*(base(positive)-base(negative))`、studentはtarget条件とLoRA強度+1で、raw flow velocityのMSEを学習します。Attentionはteacher/studentともPyTorchの勾配対応経路です。推論時のbackendとの差はモデル・環境別の検証対象です。
+teacherはLoRA無効の同じ量子化基底から作ります。まず`teacher=base(target)+eta*(base(positive)-base(negative))`を作り、既定の`neutral_l2`ではFP32・sample単位で`teacher *= ||base(neutral)|| / ||teacher||`とします。studentはtarget条件とLoRA強度+1で、raw flow velocityのMSEを学習します。Attentionはteacher/studentともPyTorchの勾配対応経路です。推論時のbackendとの差はモデル・環境別の検証対象です。
+
+手動ノードには任意の`neutral_conditioning`、YAMLには任意の`neutral`を指定できます。省略時はtargetを参照し、同梱6ファイル・全36レコードには`neutral=target`を明示しています。targetと同じneutralでは教師予測を再利用し、追加forwardを行いません。異なるneutralを指定した場合は教師forwardが1回増えます。
+
+**正規化の既定値は`neutral_l2`です。以前と同じ学習計算を再現する場合は`teacher_normalization=none`を指定してください。** 項目のない既存API・ワークフローも受理しますが、既定のneutral正規化が適用されます。保存済みLoRAにはこの変更は影響しません。
+
+教師または参照のL2ノルムが`1e-8`以下なら、そのsampleは正規化をスキップします。倍率・参照元・skipの有無はJSONの各stepの`teacher_normalization_info`へ記録します。非有限値になった場合は学習を停止します。異なるneutralではeta=0でも教師全体が再スケールされ得ます。この処理はanchorによる保持lossではなく、服装保持や画像品質の改善は別途比較が必要です。`none`ではneutralの教師予測や正規化を実行しません。
 
 内部は42×4=168 adapterです。QKVはAを共有し、保存時にAをq/k/vへ複製、Bを行方向に分割するため、252論理target・756 tensorの標準LoRAになります。独立したAを持つq/k/v LoRAを同rankへ圧縮して読み込むことはしません。text encoder、text refiner、norm、modulation、入出力投影は学習しません。
 

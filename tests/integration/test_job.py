@@ -88,3 +88,53 @@ def test_multi_record_job_exports_source_snapshot_and_record_schedule(native_che
     assert report["record_count"] == 2
     assert [step["record_index"] for step in report["steps"]] == [0, 1, 0]
     assert manifest["prompt_source"] == source
+
+
+def test_optional_neutral_job_reports_reference_and_json_finite(native_checkpoint, tmp_path):
+    import json
+    path, model_config, _ = native_checkpoint
+    source = conditions()
+    explicit = {**conditions(), "neutral": [[torch.full((1, 5, 4096), 2.), {}]]}
+    report = run_training_job(path, [source, explicit], TrainingConfig(steps=2, rank=2, alpha=2,
+                              width=16, height=16, rollout_steps=1), tmp_path, "neutral",
+                              device="cpu", model_config=model_config)
+    manifest = json.loads(report["manifest_path"].read_text(encoding="utf-8"))
+    assert manifest["config"]["teacher_normalization"] == "neutral_l2"
+    assert [s["teacher_normalization_info"]["reference_source"] for s in report["steps"]] == ["target", "neutral"]
+    json.dumps(manifest, allow_nan=False)
+
+
+@pytest.mark.parametrize("mode", ["none", "neutral_l2"])
+def test_invalid_neutral_rejected_before_unloading(native_checkpoint, tmp_path, monkeypatch, mode):
+    import comfy.model_management as management
+    path, model_config, _ = native_checkpoint
+    monkeypatch.setattr(management, "unload_all_models", lambda: pytest.fail("must validate before unload"))
+    with pytest.raises(ValueError, match="conditioning|CONDITIONING"):
+        run_training_job(path, {**conditions(), "neutral": []}, TrainingConfig(teacher_normalization=mode),
+                         tmp_path, "bad", device="cpu", model_config=model_config)
+
+
+@pytest.mark.parametrize("failure", ["cancel", "nonfinite"])
+def test_failed_neutral_teacher_releases_job_and_does_not_publish(native_checkpoint, tmp_path, monkeypatch, failure):
+    import comfy.model_management as management
+    from moss_slider_node.model_adapter import MossTrainingAdapter
+
+    path, model_config, _ = native_checkpoint
+    original = MossTrainingAdapter.predict_velocity
+
+    def fail_neutral(self, x, sigma, conditioning):
+        if torch.all(conditioning == 9):
+            if failure == "cancel":
+                raise InterruptedError("neutral cancellation")
+            return torch.full_like(x, float("nan"))
+        return original(self, x, sigma, conditioning)
+
+    monkeypatch.setattr(MossTrainingAdapter, "predict_velocity", fail_neutral)
+    config = TrainingConfig(steps=1, rank=2, alpha=2, width=16, height=16, rollout_steps=1)
+    explicit = {**conditions(), "neutral": [[torch.full((1, 2, 4096), 9.), {}]]}
+    with pytest.raises((InterruptedError, RuntimeError), match="neutral"):
+        run_training_job(path, explicit, config, tmp_path, "failed", device="cpu", model_config=model_config)
+    assert not management.in_training and not list(tmp_path.glob("failed*"))
+    # A subsequent job proves both the job lock and model state have been restored.
+    result = run_training_job(path, conditions(), config, tmp_path, "retry", device="cpu", model_config=model_config)
+    assert result["lora_path"].is_file()

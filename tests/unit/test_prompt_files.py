@@ -80,4 +80,39 @@ def test_packaged_presets_are_loadable_training_records():
     for name in names:
         snapshot = load_prompt_file(directory, name)
         assert len(snapshot.records) == 6
-        assert all(set(record) == {"target", "positive", "negative"} for record in snapshot.records)
+        assert all(set(record) == {"target", "positive", "negative", "neutral"} for record in snapshot.records)
+        assert all(record["neutral"] == record["target"] for record in snapshot.records)
+
+
+def test_optional_neutral_snapshot_cache_and_mixed_progress(tmp_path):
+    from moss_slider_node.prompt_files import encode_prompt_records, load_prompt_file
+
+    body = "- target: tt\n  positive: p\n  negative: n\n- target: tt\n  positive: p\n  negative: n\n  neutral: rr\n"
+    (tmp_path / "mixed.yaml").write_bytes(body.encode())
+    snapshot = load_prompt_file(tmp_path, "mixed.yaml")
+    assert "neutral" not in snapshot.records[0] and snapshot.records[1]["neutral"] == "rr"
+    assert snapshot.sha256 == hashlib.sha256(body.encode()).hexdigest()
+    calls, progress = [], []
+
+    class Clip:
+        def tokenize(self, text):
+            calls.append(text)
+            return text
+
+        def encode_from_tokens_scheduled(self, tokens):
+            return [[torch.ones(1, len(tokens), 4096), {}]]
+
+    encoded = encode_prompt_records(Clip(), snapshot.records, progress=lambda c, t: progress.append((c, t)))
+    assert calls == ["tt", "p", "n", "rr"]
+    assert progress == [(n, 7) for n in range(1, 8)]
+    assert set(encoded[0]) == {"target", "positive", "negative"}
+    assert encoded[1]["neutral"][0][0].shape == (1, 2, 4096)
+
+
+@pytest.mark.parametrize("value", ["null", "''", "'  '", "42"])
+def test_explicit_invalid_neutral_is_rejected(tmp_path, value):
+    from moss_slider_node.prompt_files import load_prompt_file
+
+    (tmp_path / "bad.yaml").write_text(f"- target: t\n  positive: p\n  negative: n\n  neutral: {value}\n")
+    with pytest.raises(ValueError, match="nonempty"):
+        load_prompt_file(tmp_path, "bad.yaml")

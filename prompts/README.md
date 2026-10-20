@@ -38,8 +38,13 @@ MOSSのローカル公式資料 [USERGUIDE — Prompt Guidelines / Image Caption
 - target: studentに入力する基準キャプション。
 - positive: 正のLoRA強度で向かう概念。
 - negative: teacherの差分を作る比較対象のキャプション。生成用の除外語句を記入する欄ではありません。
+- neutral: 教師全体のL2正規化に使用する任意の参照キャプション。省略時はtarget。同梱セットでは全レコードでtargetと同じ本文を明示しています。
 
-通常のYAMLブロック形式・UTF-8 BOM・スカラーのanchor/aliasを読めます。各レコードはこの3フィールドだけを持つ形式です。Krea2のneutralやanchorによる追加損失は未対応で、記入した場合は明示的なエラーになります。重複キー・空文字・同一のpositive/negative・フォルダー外のパスも拒否します。ComfyUIに既存のPyYAMLを使用し、追加インストールは行っていません。
+通常のYAMLブロック形式・UTF-8 BOM・スカラーのanchor/aliasを読めます。各レコードは必須3フィールドと任意のneutralだけを持つ形式です。neutralを明示する場合は空でない文字列が必要です。anchorによる追加の保持lossは未対応です。未知キー・重複キー・空文字・同一のpositive/negative・フォルダー外のパスは拒否します。ComfyUIに既存のPyYAMLを使用し、追加インストールは行っていません。
+
+ノードの`teacher_normalization`は既定`neutral_l2`です。教師全体のL2ノルムをneutral予測へ合わせ、neutral省略時はtarget予測を使います。例として、上記レコードに`neutral: >-`でtargetと同じ本文を追加できます。`none`は従来の未正規化教師で、neutralを読み込んでも追加の教師計算をしません。旧ワークフローやAPIでこの設定を省略した場合もneutral_l2が使われるため、従来の数値動作を比較するときはnoneを明示してください。
+
+教師または参照のL2ノルムが`1e-8`以下なら補正をスキップし、倍率と参照元をレポートに残します。異なるneutralではeta=0でも教師全体を再スケールします。neutral正規化は服装等を保持する追加lossではありません。
 
 ファイルは1〜64レコード、2 MiBまで。各roleの実エンコード結果はbatch1・4096次元・1〜4096tokenのMOSS条件として検査し、paddingを個別に除去します。
 

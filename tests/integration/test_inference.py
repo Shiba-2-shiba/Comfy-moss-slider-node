@@ -75,6 +75,38 @@ def test_packed_bypass_matches_training_lora_and_leaves_base_unchanged(native_ch
         assert patcher.injections == {} and patcher.patches == {}
 
 
+def test_normalized_training_artifact_roundtrips_through_existing_apply(native_checkpoint, tmp_path):
+    from moss_slider_node.job import run_training_job
+    from moss_slider_node.training import TrainingConfig
+
+    path, config, _ = native_checkpoint
+    conditions = {role: [[torch.randn(1, 2, 4096), {}]]
+                  for role in ("target", "positive", "negative", "neutral")}
+    result = run_training_job(path, conditions,
+                              TrainingConfig(steps=1, rank=2, alpha=2, width=16, height=16, rollout_steps=1),
+                              tmp_path, "normalized", device="cpu", model_config=config)
+    manifest = json.loads(result["manifest_path"].read_text(encoding="utf-8"))
+    assert manifest["training"]["teacher_normalization"]["mode"] == "neutral_l2"
+    inference, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+    patcher = wrap_native(inference, config, path)
+    before = {name: b.clone() for name, b in inference.named_buffers()}
+    x, c, sigma = torch.randn(1, 128, 1, 1), torch.randn(1, 2, 4096), torch.tensor([.4])
+    with training_context(inference), torch.no_grad():
+        baseline = inference(x, sigma, c)
+    for strength in [0., 1.]:
+        applied = apply_slider(patcher, result["lora_path"], strength)
+        try:
+            applied.inject_model()
+            with training_context(inference), torch.no_grad():
+                actual = inference(x, sigma, c)
+            assert torch.isfinite(actual).all()
+            if strength == 0:
+                torch.testing.assert_close(actual, baseline, rtol=0, atol=0)
+        finally:
+            applied.eject_model()
+    assert all(torch.equal(before[name], b) for name, b in inference.named_buffers())
+
+
 def test_apply_rejects_wrong_base_identity_and_independent_qkv_a(native_checkpoint, tmp_path):
     path, config, _ = native_checkpoint
     native, _ = load_training_model(path, config=config, compute_dtype=torch.float32)

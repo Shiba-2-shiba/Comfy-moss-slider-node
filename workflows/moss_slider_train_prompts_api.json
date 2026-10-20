@@ -27,7 +27,8 @@
       "rollout_steps": 8,
       "gradient_checkpointing": true,
       "blocks_to_swap": 0,
-      "output_prefix": "moss_aging_realistic"
+      "output_prefix": "moss_aging_realistic",
+      "teacher_normalization": "neutral_l2"
     }
   }
 }

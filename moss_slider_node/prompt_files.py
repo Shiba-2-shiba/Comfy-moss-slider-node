@@ -4,12 +4,13 @@ import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 from .model_adapter import normalize_conditioning
 
 
 _ROLES = ("target", "positive", "negative")
+_OPTIONAL_ROLES = ("neutral",)
 
 
 @dataclass(frozen=True)
@@ -55,11 +56,13 @@ def load_prompt_file(directory, name):
         raise ValueError("Prompt YAML must be a list of 1 to 64 records")
     validated = []
     for index, record in enumerate(records):
-        if not isinstance(record, dict) or set(record) != set(_ROLES):
-            raise ValueError(f"Record {index + 1} requires only target, positive and negative; anchor/neutral are unsupported")
-        if any(not isinstance(record[role], str) or not record[role].strip() for role in _ROLES):
-            raise ValueError(f"Record {index + 1} requires three nonempty prompt strings")
-        record = {role: record[role].strip() for role in _ROLES}
+        if (not isinstance(record, dict) or not set(_ROLES).issubset(record)
+                or set(record) - set(_ROLES + _OPTIONAL_ROLES)):
+            raise ValueError(f"Record {index + 1} requires target, positive, negative and optional neutral; anchor is unsupported")
+        roles = [role for role in _ROLES + _OPTIONAL_ROLES if role in record]
+        if any(not isinstance(record[role], str) or not record[role].strip() for role in roles):
+            raise ValueError(f"Record {index + 1} requires nonempty prompt strings")
+        record = {role: record[role].strip() for role in roles}
         if record["positive"] == record["negative"]:
             raise ValueError(f"Record {index + 1} requires distinct positive and negative concepts")
         validated.append(record)
@@ -68,10 +71,13 @@ def load_prompt_file(directory, name):
 
 def encode_prompt_records(clip, records, *, cancel=None, progress=None):
     encoded, cache = [], {}
-    total = len(records) * len(_ROLES)
-    for index, record in enumerate(records):
+    total = sum(len(record) for record in records)
+    completed = 0
+    for record in records:
         current = {}
-        for offset, role in enumerate(_ROLES, 1):
+        for role in _ROLES + _OPTIONAL_ROLES:
+            if role not in record:
+                continue
             if cancel:
                 cancel()
             text = record[role]
@@ -80,7 +86,8 @@ def encode_prompt_records(clip, records, *, cancel=None, progress=None):
                 # Trim each role's own padding and retain a detached CPU tensor.
                 cache[text] = [[normalize_conditioning(conditioning), {}]]
             current[role] = cache[text]
+            completed += 1
             if progress:
-                progress(index * len(_ROLES) + offset, total)
+                progress(completed, total)
         encoded.append(current)
     return encoded

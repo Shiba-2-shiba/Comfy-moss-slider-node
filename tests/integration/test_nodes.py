@@ -14,6 +14,7 @@ def plugin():
     package = importlib.util.module_from_spec(spec)
     sys.modules[name] = package
     spec.loader.exec_module(package)
+    asyncio.run(package.comfy_entrypoint())
     return package
 
 
@@ -97,7 +98,7 @@ def test_yaml_node_encodes_every_record_and_exports_the_selected_snapshot(plugin
     result = module.MossSliderTrainFromPrompts.execute("moss.safetensors", Clip(), "aging_slider_fullbody.yaml",
                                                      steps=6, rank=2, alpha=2, width=256, height=256)
     assert len(calls["records"]) == 6
-    assert all(set(record) == {"target", "positive", "negative"} for record in calls["records"])
+    assert all(set(record) == {"target", "positive", "negative", "neutral"} for record in calls["records"])
     assert calls["source"]["file"] == "aging_slider_fullbody.yaml"
     assert len(calls["source"]["records"]) == 6 and len(calls["source"]["sha256"]) == 64
     assert calls["config"].steps == 6
@@ -105,6 +106,72 @@ def test_yaml_node_encodes_every_record_and_exports_the_selected_snapshot(plugin
     assert json.loads(result.result[1])["steps_completed"] == 6
     assert result.ui["text"][0] == f"LoRA: {tmp_path / 'moss_sliders' / 'preset.safetensors'}"
     assert result.ui["text"][-1] == "Prompts: aging_slider_fullbody.yaml (6 records)"
+
+
+def test_normalization_schema_is_optional_and_neutral_default(plugin):
+    module = sys.modules[plugin.__name__ + ".nodes"]
+    manual = module.MossSliderTrain.define_schema().get_v1_info(module.MossSliderTrain).input
+    yaml_cls = module.MossSliderTrainFromPrompts
+    yaml_input = yaml_cls.define_schema().get_v1_info(yaml_cls).input
+    for inputs in [manual, yaml_input]:
+        mode = inputs["optional"]["teacher_normalization"]
+        assert mode[0] == "COMBO" and mode[1]["options"] == ["none", "neutral_l2"]
+        assert mode[1]["default"] == "neutral_l2"
+    assert "neutral_conditioning" in manual["optional"]
+    assert all("neutral_conditioning" not in group for group in yaml_input.values())
+
+
+@pytest.mark.parametrize("mode", [None, "none", "neutral_l2"])
+def test_manual_neutral_and_omitted_mode_are_forwarded(plugin, monkeypatch, tmp_path, mode):
+    module = sys.modules[plugin.__name__ + ".nodes"]
+    seen = {}
+
+    def fake_job(checkpoint_path, records, config, output_dir, prefix, **kwargs):
+        seen.update(records=records, config=config)
+        return {"lora_path": Path(output_dir) / "test.safetensors", "manifest_path": Path(output_dir) / "test.json"}
+
+    monkeypatch.setattr(module, "run_training_job", fake_job)
+    monkeypatch.setattr(module.folder_paths, "get_full_path_or_raise", lambda *_: str(tmp_path / "base"))
+    monkeypatch.setattr(module.folder_paths, "get_output_directory", lambda: str(tmp_path))
+    settings = {} if mode is None else {"teacher_normalization": mode}
+    module.MossSliderTrain.execute("base", [], [], [], neutral_conditioning=["neutral"], **settings)
+    assert seen["records"]["neutral"] == ["neutral"]
+    assert seen["config"].teacher_normalization == (mode or "neutral_l2")
+
+
+@pytest.mark.parametrize("node_id", ["MossSliderTrain", "MossSliderTrainFromPrompts"])
+def test_comfy_prompt_validation_accepts_legacy_omitted_optional_fields(plugin, monkeypatch, node_id):
+    import comfy
+
+    monkeypatch.syspath_prepend(str(Path(next(iter(comfy.__path__))).resolve().parent))
+    import execution
+
+    module = sys.modules[plugin.__name__ + ".nodes"]
+    monkeypatch.setattr(module.folder_paths, "get_filename_list", lambda *_: ["base.safetensors"])
+    cls = getattr(module, node_id)
+
+    class Source:
+        RETURN_TYPES = ("CONDITIONING", "CLIP")
+
+        @classmethod
+        def INPUT_TYPES(cls):
+            return {}
+
+    monkeypatch.setitem(execution.nodes.NODE_CLASS_MAPPINGS, "NeutralTestSource", Source)
+    monkeypatch.setitem(execution.nodes.NODE_CLASS_MAPPINGS, node_id, cls)
+    required = cls.INPUT_TYPES()["required"]
+    inputs = {}
+    for name, spec in required.items():
+        kind, opts = spec[0], spec[1] if len(spec) > 1 else {}
+        if kind in ("CONDITIONING", "CLIP"):
+            inputs[name] = ["source", 0 if kind == "CONDITIONING" else 1]
+        else:
+            inputs[name] = opts.get("default", opts.get("options", [None])[0])
+    # An old prompt contains neither teacher_normalization nor neutral_conditioning.
+    prompt = {"source": {"class_type": "NeutralTestSource", "inputs": {}},
+              "train": {"class_type": node_id, "inputs": inputs}}
+    valid, errors, _ = asyncio.run(execution.validate_inputs("neutral-test", prompt, "train", {}))
+    assert valid, errors
 
 
 def test_training_progress_logs_step_time_without_mixing_load_counts(plugin, monkeypatch, tmp_path, caplog):

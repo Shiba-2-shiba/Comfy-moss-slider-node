@@ -96,6 +96,10 @@ class MossSliderTrain(io.ComfyNode):
                 io.Boolean.Input("gradient_checkpointing", default=True),
                 io.Int.Input("blocks_to_swap", default=0, min=0, max=42),
                 io.String.Input("output_prefix", default="moss_slider"),
+                io.Combo.Input("teacher_normalization", options=["none", "neutral_l2"], default="neutral_l2",
+                               optional=True, advanced=True,
+                               tooltip="Match the teacher L2 norm to neutral (target when omitted). none uses the original teacher."),
+                io.Conditioning.Input("neutral_conditioning", optional=True),
             ],
             outputs=[io.String.Output(display_name="lora_name"), io.String.Output(display_name="report")],
             is_output_node=True, not_idempotent=True, is_experimental=True)
@@ -104,12 +108,16 @@ class MossSliderTrain(io.ComfyNode):
     def execute(cls, checkpoint_name, target_conditioning, positive_conditioning, negative_conditioning,
                 steps=100, rank=8, alpha=8.0, learning_rate=0.0001, eta=1.0, seed=0,
                 width=512, height=512, rollout_steps=8, gradient_checkpointing=True,
-                blocks_to_swap=0, output_prefix="moss_slider"):
+                blocks_to_swap=0, output_prefix="moss_slider", teacher_normalization="neutral_l2",
+                neutral_conditioning=None):
         config = TrainingConfig(steps=steps, rank=rank, alpha=alpha, learning_rate=learning_rate, eta=eta,
                                 seed=seed, width=width, height=height, rollout_steps=rollout_steps,
-                                gradient_checkpointing=gradient_checkpointing, blocks_to_swap=blocks_to_swap)
-        return _run_training(checkpoint_name, {"target": target_conditioning, "positive": positive_conditioning,
-                                               "negative": negative_conditioning}, config, output_prefix)
+                                gradient_checkpointing=gradient_checkpointing, blocks_to_swap=blocks_to_swap,
+                                teacher_normalization=teacher_normalization)
+        conditions = {"target": target_conditioning, "positive": positive_conditioning, "negative": negative_conditioning}
+        if neutral_conditioning is not None:
+            conditions["neutral"] = neutral_conditioning
+        return _run_training(checkpoint_name, conditions, config, output_prefix)
 
 
 class MossSliderTrainFromPrompts(io.ComfyNode):
@@ -120,9 +128,10 @@ class MossSliderTrainFromPrompts(io.ComfyNode):
         schema.display_name = "MOSS Slider Train from Prompts"
         schema.description = ("Select a YAML from this repository's prompts folder and connect a native MOSS CLIP. "
                               "All target/positive/negative records are used in order, one record per optimizer step. "
-                              "Steps is the total update count. Anchor/neutral losses are not supported.")
+                              "Optional neutral supplies the L2 normalization reference; otherwise target is used. "
+                              "Steps is the total update count. Anchor preservation loss is not supported.")
         schema.inputs = [item for item in schema.inputs if item.id not in
-                         {"target_conditioning", "positive_conditioning", "negative_conditioning"}]
+                         {"target_conditioning", "positive_conditioning", "negative_conditioning", "neutral_conditioning"}]
         schema.inputs[1:1] = [io.Clip.Input("clip"),
                              io.Combo.Input("prompt_yaml", options=list_prompt_files(_PROMPTS_DIR),
                                             tooltip="YAML files in this repository's prompts folder. All records are used.")]
@@ -137,13 +146,13 @@ class MossSliderTrainFromPrompts(io.ComfyNode):
         config = TrainingConfig(**settings)
         config.validate()
         snapshot = load_prompt_file(_PROMPTS_DIR, prompt_yaml)
-        bar = ProgressBar(len(snapshot.records) * 3)
+        total_roles = sum(len(record) for record in snapshot.records)
+        bar = ProgressBar(total_roles)
         LOGGER.info("MOSS Slider encoding prompts: 0/%d records (%s)", len(snapshot.records), snapshot.name)
 
         def encoding_progress(current, total):
             bar.update_absolute(current, total)
-            if current % 3 == 0:
-                LOGGER.info("MOSS Slider encoding prompts: %d/%d records", current // 3, total // 3)
+            LOGGER.info("MOSS Slider encoding prompt roles: %d/%d", current, total)
 
         conditions = encode_prompt_records(clip, snapshot.records, cancel=throw_exception_if_processing_interrupted,
                                             progress=encoding_progress)
