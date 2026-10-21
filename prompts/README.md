@@ -56,11 +56,13 @@ stepsはファイル全体でのoptimizer更新総数です。6レコードの�
 
 ## 使うワークフローと確認範囲
 
-[編集用workflow](../workflows/moss_slider_train_prompts.json) を開き、checkpoint_name、MOSS用CLIP、prompt_yamlを選択します。[API版](../workflows/moss_slider_train_prompts_api.json) も同梱しています。初期選択は実写女性加齢の `aging_slider_realistic.yaml` です。学習初期値は **steps=300、rank=16、alpha=2、learning_rate=0.0001、eta=1、768×768、rollout_steps=8**、seed=0、gradient_checkpointing=true、blocks_to_swap=0です。これは効果を比較するための開始設定で、品質の最適値ではありません。
+[編集用workflow](../workflows/moss_slider_train_prompts.json) を開き、checkpoint_name、MOSS用CLIP、prompt_yamlを選択します。[API版](../workflows/moss_slider_train_prompts_api.json) も同梱しています。初期選択は女性若返りの `deaging_slider_fullbody.yaml`、出力名は `deaging_slider` です。学習初期値は **steps=600、rank=16、alpha=2、learning_rate=0.0002、eta=1.5、768×768、rollout_steps=16**、seed=0、gradient_checkpointing=true、blocks_to_swap=0、teacher_normalization=neutral_l2です。ノードを新規追加した場合の既定値も同じです。
 
-`rollout_steps=1` は最大ノイズ時刻だけの学習になるため避けます。まず上記で比較し、必要に応じてstepsを600→1200、etaを2、rollout_stepsを16へ、一項目ずつ変更してください。rollout_stepsを増やすと途中状態の生成が入り、1更新あたりの時間も増えます。INT8基底での比較には専用の **MOSS Slider Apply INT8** を使用し、同じseed・promptで強度0/1/2を確認します。実写セットの加齢効果は実画像で未検証です。
+設定の根拠は、提供された `deaging_slider.json` のconfigと生成画像です。基底は `moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors`、6レコードを各100回使う学習です。manifestのprompt_source.recordsは同梱YAMLと一致し、SHA256の差はLF/CRLFの改行差だけでした。生成画像5枚は同じseed・promptでLoRA強度0/1/2/3/4を比較しており、若返りに加えて強い設定で体格・構図・装飾品の変化も見られます。ユーザーが効果を良好と評価した設定を採用しており、他のプロンプトや加齢での最適値を示すものではありません。
 
-手動conditioning型の[編集用workflow](../workflows/moss_slider_train.json)と[API版](../workflows/moss_slider_train_api.json)も同じ学習値に揃え、実写の顔アップ1件を初期キャプションにしています。これらはワークフロー保存値であり、ノードを新規追加したときの既定値とは別です。
+`rollout_steps=1` は最大ノイズ時刻だけの学習になるため避けます。rollout_stepsを増やすと途中状態の生成が入り、1更新あたりの時間も増えます。INT8基底での比較には専用の **MOSS Slider Apply INT8** を使用し、同じseed・promptで強度0/1/2を確認します。実写セットの加齢効果は実画像で未検証です。
+
+手動conditioning型の[編集用workflow](../workflows/moss_slider_train.json)と[API版](../workflows/moss_slider_train_api.json)も同じ学習値・基底に揃えています。こちらは実写加齢の顔アップ1件を初期キャプションにした例です。今回の6レコードによる若返り学習の再現には、プロンプト選択型を使用します。保存済みの個人ワークフローは自動更新されないため、同梱版を開き直すか各値を変更してください。
 
 2026-10-19、R9700上のComfyUIで女性加齢の全6レコードを実encoderから6 step学習し、有限loss/gradientとLoRA保存、prompt_sourceのSHA256一致を確認しました。当時の5ファイルの読込・構造はテスト済みですが、各sliderの画質・方向効果・性別分離・構図保持は未評価です。負の強度で望む逆方向の効果が得られる保証もありません。
 

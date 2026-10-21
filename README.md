@@ -31,7 +31,7 @@ MOSS-ImageのConvRot INT8モデルを凍結し、テキストの方向を制御�
 
 プロンプト一覧から選ぶ場合は、[MOSS Slider Train from Promptsのworkflow](workflows/moss_slider_train_prompts.json)を開き、標準のLoad CLIP（type=moss_image）を接続して **prompt_yaml** を選択します。[prompts/](prompts/README.md)に加齢・若返りの男女別と成人女性の胸サイズのアニメ調5セットと、実写調の女性加齢1セット（各6件）を同梱しています。stepsは更新総数で、全レコードを一件ずつ循環して使います。選択ファイルの本文とSHA256はmanifestに保存します。
 
-同梱学習ワークフローは効果比較用の開始設定として、300 steps・rank16・alpha2・学習率1e-4・eta1・768×768・rollout_steps=8へ揃えています。プロンプト選択型の初期選択は実写加齢の `aging_slider_realistic.yaml` です。設定の意図と調整順は[prompts/README.md](prompts/README.md)を参照してください。実写セットの生成品質は未検証で、ノードを新規追加した場合の既定値とは別です。
+ノードの既定値と同梱学習ワークフローは、提供された `deaging_slider.json` の学習設定に合わせ、600 steps・rank16・alpha2・学習率0.0002・eta1.5・768×768・rollout_steps=16へ揃えています。seed=0、gradient_checkpointing=true、blocks_to_swap=0、teacher_normalization=neutral_l2です。プロンプト選択型の初期選択は今回使用された `deaging_slider_fullbody.yaml`、出力名は `deaging_slider` です。ワークフローの基底も今回と同じ `moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors` に揃えています。設定の根拠と確認範囲は[prompts/README.md](prompts/README.md)を参照してください。
 
 手動でconditioningを接続する場合は従来のMOSS Slider Train INT8を使えます。
 
@@ -67,12 +67,13 @@ MOSS Slider step 2/6 | 1.30s/step | elapsed 4.6s | ETA 9.2s | loss=0.0239832 gra
 
 | 設定 | 内容 |
 |---|---|
-| `steps` | optimizer更新回数。既定100 |
-| `rank` / `alpha` | LoRA rankと`alpha/rank`係数。既定8 / 8 |
-| `learning_rate` | AdamWの学習率。既定1e-4、weight decayは0 |
-| `eta` | teacherの`positive-negative`方向の強さ。samplerのCFG値とは別 |
+| `steps` | optimizer更新回数。既定600 |
+| `rank` / `alpha` | LoRA rankと`alpha/rank`係数。既定16 / 2（係数0.125） |
+| `learning_rate` | AdamWの学習率。既定0.0002、weight decayは0 |
+| `eta` | teacherの`positive-negative`方向の強さ。既定1.5。samplerのCFG値とは別 |
+| `width` / `height` | 学習解像度。既定768 / 768 |
 | `teacher_normalization` | 既定`neutral_l2`。教師全体のL2ノルムをneutralに合わせる。`none`で従来の教師式を使用 |
-| `rollout_steps` | native shift=5のEuler schedule。既定8 |
+| `rollout_steps` | native shift=5のEuler schedule。既定16 |
 | `gradient_checkpointing` | block単位のnon-reentrant再計算。既定有効 |
 | `blocks_to_swap` | 末尾N blockのI8/scaleをCPUに残し、Linearごとに同期転送。0〜42 |
 

@@ -40,7 +40,7 @@
   "5": {
     "class_type": "MossSliderTrain",
     "inputs": {
-      "checkpoint_name": "moss_image_sft_int8_convrot.safetensors",
+      "checkpoint_name": "moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors",
       "target_conditioning": [
         "2",
         0
@@ -53,15 +53,15 @@
         "4",
         0
       ],
-      "steps": 300,
+      "steps": 600,
       "rank": 16,
-      "alpha": 2,
-      "learning_rate": 0.0001,
-      "eta": 1,
+      "alpha": 2.0,
+      "learning_rate": 0.0002,
+      "eta": 1.5,
       "seed": 0,
       "width": 768,
       "height": 768,
-      "rollout_steps": 8,
+      "rollout_steps": 16,
       "gradient_checkpointing": true,
       "blocks_to_swap": 0,
       "output_prefix": "moss_aging_portrait",

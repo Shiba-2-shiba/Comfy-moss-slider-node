@@ -84,15 +84,15 @@ class MossSliderTrain(io.ComfyNode):
                 io.Combo.Input("checkpoint_name", options=folder_paths.get_filename_list("diffusion_models")),
                 io.Conditioning.Input("target_conditioning"), io.Conditioning.Input("positive_conditioning"),
                 io.Conditioning.Input("negative_conditioning"),
-                io.Int.Input("steps", default=100, min=1, max=100000),
-                io.Int.Input("rank", default=8, min=1, max=128),
-                io.Float.Input("alpha", default=8.0, min=0.001, max=1024),
-                io.Float.Input("learning_rate", default=0.0001, min=0.0000001, max=0.1, step=0.00001),
-                io.Float.Input("eta", default=1.0, min=0.0, max=100),
+                io.Int.Input("steps", default=600, min=1, max=100000),
+                io.Int.Input("rank", default=16, min=1, max=128),
+                io.Float.Input("alpha", default=2.0, min=0.001, max=1024),
+                io.Float.Input("learning_rate", default=0.0002, min=0.0000001, max=0.1, step=0.00001),
+                io.Float.Input("eta", default=1.5, min=0.0, max=100),
                 io.Int.Input("seed", default=0, min=0, max=0x7FFFFFFFFFFFFFFF),
-                io.Int.Input("width", default=512, min=16, max=4096, step=16),
-                io.Int.Input("height", default=512, min=16, max=4096, step=16),
-                io.Int.Input("rollout_steps", default=8, min=1, max=100),
+                io.Int.Input("width", default=768, min=16, max=4096, step=16),
+                io.Int.Input("height", default=768, min=16, max=4096, step=16),
+                io.Int.Input("rollout_steps", default=16, min=1, max=100),
                 io.Boolean.Input("gradient_checkpointing", default=True),
                 io.Int.Input("blocks_to_swap", default=0, min=0, max=42),
                 io.String.Input("output_prefix", default="moss_slider"),
@@ -106,8 +106,8 @@ class MossSliderTrain(io.ComfyNode):
 
     @classmethod
     def execute(cls, checkpoint_name, target_conditioning, positive_conditioning, negative_conditioning,
-                steps=100, rank=8, alpha=8.0, learning_rate=0.0001, eta=1.0, seed=0,
-                width=512, height=512, rollout_steps=8, gradient_checkpointing=True,
+                steps=600, rank=16, alpha=2.0, learning_rate=0.0002, eta=1.5, seed=0,
+                width=768, height=768, rollout_steps=16, gradient_checkpointing=True,
                 blocks_to_swap=0, output_prefix="moss_slider", teacher_normalization="neutral_l2",
                 neutral_conditioning=None):
         config = TrainingConfig(steps=steps, rank=rank, alpha=alpha, learning_rate=learning_rate, eta=eta,
@@ -134,6 +134,7 @@ class MossSliderTrainFromPrompts(io.ComfyNode):
                          {"target_conditioning", "positive_conditioning", "negative_conditioning", "neutral_conditioning"}]
         schema.inputs[1:1] = [io.Clip.Input("clip"),
                              io.Combo.Input("prompt_yaml", options=list_prompt_files(_PROMPTS_DIR),
+                                            default="deaging_slider_fullbody.yaml",
                                             tooltip="YAML files in this repository's prompts folder. All records are used.")]
         return schema
 

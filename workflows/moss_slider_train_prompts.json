@@ -73,19 +73,19 @@
       },
       "widgets_values": [
         "moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors",
-        "aging_slider_realistic.yaml",
-        300,
+        "deaging_slider_fullbody.yaml",
+        600,
         16,
-        2,
-        0.0001,
-        1,
+        2.0,
+        0.0002,
+        1.5,
         0,
         768,
         768,
-        8,
+        16,
         true,
         0,
-        "moss_aging_realistic",
+        "deaging_slider",
         "neutral_l2"
       ]
     }

@@ -129,7 +129,7 @@ def test_neutral_teacher_matches_independent_formula_and_records_reference(expli
     if explicit:
         conditions["neutral"] = torch.full((1, 4, 5), 2.)
     model = _toy(31)
-    report = train_slider(model, conditions, TrainingConfig(steps=1, width=16, height=16, rollout_steps=1))
+    report = train_slider(model, conditions, TrainingConfig(steps=1, width=16, height=16, rollout_steps=1, eta=1.0))
     student_calls = [c for c in model.calls if c["grad"]]
     assert len(student_calls) == 1 and student_calls[0]["multipliers"] == [1., 1.]
     x = student_calls[0]["x"]
@@ -233,15 +233,15 @@ def test_training_config_accepts_documented_defaults():
     config = TrainingConfig()
 
     assert config == TrainingConfig(
-        steps=100,
-        rank=8,
-        alpha=8.0,
-        learning_rate=1e-4,
-        eta=1.0,
+        steps=600,
+        rank=16,
+        alpha=2.0,
+        learning_rate=2e-4,
+        eta=1.5,
         seed=0,
-        width=512,
-        height=512,
-        rollout_steps=8,
+        width=768,
+        height=768,
+        rollout_steps=16,
         gradient_checkpointing=True,
         blocks_to_swap=0,
         max_grad_norm=1.0,

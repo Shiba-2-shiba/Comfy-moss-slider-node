@@ -12,15 +12,15 @@ from torch.nn import functional as F
 
 @dataclass(frozen=True)
 class TrainingConfig:
-    steps: int = 100
-    rank: int = 8
-    alpha: float = 8.0
-    learning_rate: float = 1e-4
-    eta: float = 1.0
+    steps: int = 600
+    rank: int = 16
+    alpha: float = 2.0
+    learning_rate: float = 2e-4
+    eta: float = 1.5
     seed: int = 0
-    width: int = 512
-    height: int = 512
-    rollout_steps: int = 8
+    width: int = 768
+    height: int = 768
+    rollout_steps: int = 16
     gradient_checkpointing: bool = True
     blocks_to_swap: int = 0
     max_grad_norm: float = 1.0
