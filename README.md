@@ -87,13 +87,13 @@ teacherはLoRA無効の同じ量子化基底から作ります。まず`teacher=
 
 内部は42×4=168 adapterです。QKVはAを共有し、保存時にAをq/k/vへ複製、Bを行方向に分割するため、252論理target・756 tensorの標準LoRAになります。独立したAを持つq/k/v LoRAを同rankへ圧縮して読み込むことはしません。text encoder、text refiner、norm、modulation、入出力投影は学習しません。
 
-LoRA強度0は基底に一致し、負値も適用できます。単方向学習なので、負値で望む逆方向の画質効果が得られる保証はありません。複数slider、領域mask、bidirectional、画像dataset、resumeは初期版の対象外です。
+LoRA強度0はそのノードの追加効果を無効にし、負値も適用できます。単独適用の強度0は基底に一致し、連結時の強度0は前段までの効果を保持します。単方向学習なので、負値で望む逆方向の画質効果が得られる保証はありません。領域mask、bidirectional、画像dataset、resumeは初期版の対象外です。
 
 ## 保存と推論
 
 出力はComfyUIに設定されたoutputディレクトリ内の`moss_sliders/`です。現在の環境では`C:\ComfyUI\output\moss_sliders\`になります。追加モデルパスやLoRA検索先の登録順には依存しません。保存先のフルパスはノードの表示、ログ、reportの`lora_path`と`manifest_path`で確認できます。`lora_name`出力はoutputからの相対パスです。Applyや標準LoRA loaderで使用するには、LoRAと同名JSONを登録済みLoRAフォルダーへ一緒にコピーし、モデル一覧を更新してください。同名ファイルは上書きせずsuffixを付けます。`.safetensors`と同名の`.json`を同じ名前のまま一緒に保持してください。manifestには基底全体とLoRA本体のSHA256、設定、実行版、loss、使用した時刻等を記録します。JSONを配置してから完成したLoRAを最終名へrenameするcommit方式です。プロセスが途中終了しても、JSONなしの未完成LoRAを最終名で公開しません。孤立JSON等が残った場合も再実行は既存名を上書きしません。
 
-専用Applyは標準`Load Diffusion Model`由来のMODELから基底を識別し、manifestのSHA256と照合します。別基底・既存LoRAでpatch済みのMODEL・manifest欠落を拒否します。QKVをpackedキーへ戻してComfyUIのbypassを使い、weight mergeや再量子化を行いません。
+専用Applyは標準`Load Diffusion Model`由来のMODELから基底を識別し、manifestのSHA256と照合します。`Load Diffusion Model → Apply A → Apply B → sampler`のようにMODELを連結し、複数sliderを個別のstrengthで加算できます。同じLoRAの重ね掛けにも対応します。各LoRAは同じ基底のmanifestが必要です。別基底・通常のweight patchを持つMODEL・bypass以外のinjectionを持つMODEL・manifest欠落は拒否します。QKVをpackedキーへ戻してComfyUIのbypassを使い、weight mergeや再量子化を行いません。前段のbypassを保持し、解除時は逆順に戻すため、連結後も元のINT8重みを保持します。
 
 保存LoRAの論理キーは標準LoRA loaderにも対応します。ただし、標準loaderのmerge/requantizeは専用Applyの「INT8基底を保持する」経路と同じ数値になるとは限らず、標準loaderはこのmanifestの基底一致を強制検証しません。
 

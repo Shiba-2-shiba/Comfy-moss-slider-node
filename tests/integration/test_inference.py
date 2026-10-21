@@ -186,3 +186,72 @@ def test_actual_comfy_quantized_ffn_keeps_bypass_with_fused_activation(native_ch
             applied.eject_model()
         assert not down.comfy_force_forward
         assert torch.equal(down.weight._qdata, codes)
+
+
+@pytest.mark.parametrize("strengths,same_lora", [
+    ((0.75, -0.5), False), ((0.75, 0.0), False), ((0.0, -0.5), False),
+    ((0.75, -0.75), True),
+])
+def test_chained_sliders_sum_deltas_and_restore_int8_base(native_checkpoint, tmp_path, strengths, same_lora):
+    import comfy.ops
+    from comfy.ldm.moss_image.model import MOSSImage
+    from comfy_kitchen.tensor import QuantizedTensor
+    from safetensors.torch import load_file
+
+    path, config, _ = native_checkpoint
+    artifacts, trained_models = [], []
+    for index, (rank, alpha) in enumerate([(2, 0.1), (3, 1.5)]):
+        trained, _ = load_training_model(path, config=config, compute_dtype=torch.float32)
+        inject_lora(trained, rank=rank, alpha=alpha)
+        with torch.no_grad():
+            for parameter in lora_parameters(trained):
+                parameter.normal_(0, 0.1)
+        lora, _ = save_lora(trained, tmp_path, f"chain_{index}", {"source": {"sha256": file_sha256(path)}})
+        artifacts.append(lora)
+        trained_models.append(trained)
+    if same_lora:
+        artifacts[1], trained_models[1] = artifacts[0], trained_models[0]
+
+    native = MOSSImage(**vars(config), fused_qkv=True, dtype=torch.float32, device="cpu",
+                       operations=comfy.ops.mixed_precision_ops({}, compute_dtype=torch.float32))
+    state = load_file(path)
+    state.pop("rope.bands")
+    native.load_state_dict(state, strict=True)
+    native.requires_grad_(False)
+    patcher = wrap_native(native, config, path)
+    down = native.layers[0].proj["ffn_down"]
+    assert isinstance(down.weight, QuantizedTensor)
+    codes, scale = down.weight._qdata.clone(), down.weight._params.scale.clone()
+    original_forward = down.forward
+    hidden = torch.randn(1, 3, config.ffn_dim * 2)
+    h, gate = hidden.chunk(2, dim=-1)
+    activated = (4 * torch.tanh(gate / 4) * torch.sigmoid(gate)) * (25 * torch.tanh(h / 25))
+    base = down(activated)
+    deltas = []
+    for trained in trained_models:
+        adapter = trained.layers[0].proj["ffn_down"]
+        deltas.append(torch.nn.functional.linear(
+            torch.nn.functional.linear(activated, adapter.lora_A), adapter.lora_B
+        ) * adapter.scaling)
+
+    first = apply_slider(patcher, artifacts[0], strengths[0])
+    chained = apply_slider(first, artifacts[1], strengths[1])
+    third = apply_slider(chained, artifacts[0], 0.25)
+    zero = apply_slider(chained, artifacts[1], 0.0)
+    # Revisit upstream outputs after downstream use and repeat to catch stale wrappers.
+    cases = [(first, base + strengths[0] * deltas[0]),
+             (chained, base + strengths[0] * deltas[0] + strengths[1] * deltas[1]),
+             (third, base + (strengths[0] + 0.25) * deltas[0] + strengths[1] * deltas[1]),
+             (zero, base + strengths[0] * deltas[0] + strengths[1] * deltas[1])]
+    for applied, expected in cases + list(reversed(cases)):
+        try:
+            applied.inject_model()
+            actual = comfy.ops.linear_input_act(down, hidden, "situ")
+            torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-4)
+        finally:
+            applied.eject_model()
+        assert down.forward == original_forward
+        assert not down.comfy_force_forward
+        assert torch.equal(down.weight._qdata, codes)
+        assert torch.equal(down.weight._params.scale, scale)
+    assert patcher.injections == {} and patcher.patches == {}

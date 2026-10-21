@@ -169,7 +169,8 @@ class MossSliderApply(io.ComfyNode):
         return io.Schema(
             node_id="MossSliderApply", display_name="MOSS Slider Apply INT8", category=_CATEGORY,
             description="Apply this package's slider without merging INT8 base weights. Requires its JSON manifest "
-                        "and an unpatched native Load Diffusion Model output using the same checkpoint.",
+                        "and a native Load Diffusion Model output using the same checkpoint. "
+                        "Chain Apply nodes to combine sliders with independent strengths.",
             inputs=[io.Model.Input("model"),
                     io.Combo.Input("lora_name", options=folder_paths.get_filename_list("loras")),
                     io.Float.Input("strength", default=1.0, min=-10.0, max=10.0, step=0.1)],

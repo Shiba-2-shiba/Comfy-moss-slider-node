@@ -67,8 +67,8 @@ def apply_slider(model, lora_path, strength):
     native = model.model.diffusion_model
     if not isinstance(native, MOSSImage) or any(not block.fused_qkv for block in native.layers):
         raise ValueError("MossSliderApply requires a native packed MOSS MODEL")
-    if model.patches or model.injections:
-        raise ValueError("Apply the slider to an unpatched MOSS base MODEL")
+    if model.patches or any(key != "bypass_lora" for key in model.injections):
+        raise ValueError("Apply the slider to an unpatched MOSS base MODEL or a chained bypass slider MODEL")
     factory = model.cached_patcher_init
     if not factory or factory[0] is not comfy.sd.load_diffusion_model:
         raise ValueError("Cannot verify base checkpoint identity; use ComfyUI Load Diffusion Model")
@@ -117,6 +117,24 @@ def apply_slider(model, lora_path, strength):
     if strength == 0:
         return model.clone()
     result, _ = comfy.sd.load_bypass_lora_for_models(model, None, packed, strength, 0)
-    if not result.get_injections("bypass_lora"):
+    injections = result.get_injections("bypass_lora")
+    if not injections:
         raise RuntimeError("ComfyUI failed to register the MOSS slider bypass")
+    previous = model.get_injections("bypass_lora")
+    if previous:
+        from comfy.patcher_extension import PatcherInjection
+
+        # The native bypass loader replaces this key. Group the old and new hooks
+        # so ejection unwinds forward wrappers in reverse order (ModelPatcher does not).
+        combined = [*previous, *injections]
+
+        def inject(patcher):
+            for injection in combined:
+                injection.inject(patcher)
+
+        def eject(patcher):
+            for injection in reversed(combined):
+                injection.eject(patcher)
+
+        result.set_injections("bypass_lora", [PatcherInjection(inject=inject, eject=eject)])
     return result
