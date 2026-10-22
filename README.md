@@ -1,120 +1,215 @@
 # Comfy MOSS Slider Node
 
-MOSS-ImageのConvRot INT8モデルを凍結し、テキストの方向を制御するSlider LoRAを学習するComfyUI V3ノードです。INT8の基底とscaleを保持し、各Linearの計算時だけ浮動小数点へ戻して、FP32 LoRA A/Bのみを更新します。
+MOSS-ImageのConvRot INT8モデルで、プロンプトに指定した変化をLoRAの強度で調整できる「Slider LoRA」を学習・適用するComfyUIカスタムノードです。
 
-現在は実験版です。CPUの小型native MOSS検証に加え、Radeon AI PRO R9700上で `moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors` のrank2・1/10 step学習、保存、強度-1/0/+1での推論を確認しています。長時間学習、必要VRAMの下限、slider効果の品質は未評価です。[実機互換検証](docs/model-compatibility-20261019.md)。
+INT8の基底モデルを凍結したまま、FP32のLoRAパラメーターだけを学習します。専用のApplyノードでは基底モデルへ重みをマージせずに適用でき、複数のスライダーを個別の強度で組み合わせられます。
 
-2026-10-19の互換対応後: **169 tests passed**、構文・差分チェックPASS。ruff/mypyは現在の環境に未導入のため今回未実行。初期実装時の133件・静的解析結果は[以前の検証概要](docs/validation.json)を参照してください。
+**実験版です。** 短時間のGPU学習・保存・再適用は確認していますが、モデルやプロンプトごとの品質、最低必要VRAM、長時間学習の安定性は保証していません。モデル・text encoder・VAE・学習済みLoRAは同梱していません。
 
-2026-10-20のneutral L2正規化対応: **CPU 213 tests passed**、ruff・mypy・構文検査PASS。既定は`neutral_l2`、同梱全36レコードにneutralを追加しました。今回のGPU学習・画質評価は未実施です。[CPU検証レポート](test-results/neutral-l2/cpu-validation.json)。
+## 主な機能
+
+- ConvRot INT8チェックポイントの形式・形状を、モデル重み全体をロードせずに検査。
+- YAMLのプロンプトセット、または手動で接続したconditioningからSlider LoRAを学習。
+- 学習中のstep時間・loss・gradient・ETAをComfyUIのログに表示。
+- LoRAと、基底モデルのSHA256・学習設定・プロンプト・実行結果を記録したJSONを保存。
+- 基底モデルの一致を確認してLoRAを適用。強度0・負の強度・複数ノードの連結に対応。
 
 ## 必要な環境
 
-- Python 3.10以上、PyTorch 2.9以上、safetensors 0.7以上。
-- ネイティブMOSS、packed QKV、V3、LoRA bypass対応のComfyUI。開発基準はcommit `8f04fd6ecf4a548937971e840af2a985529fab76`です。
-- 開発基準のComfyUI依存: `comfy-kitchen==0.2.39`、`comfy-aimdo==0.5.6`。ComfyUIを実行するPython環境の依存を合わせてください。
-- 基底: `moss_image_sft_int8_convrot.safetensors` のtensor単位設定と、StarNodesのヘッダー `_quantization_metadata` 形式に対応します。後者は `moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors` の184個のINT8 Linearで検証しました。42 blockのpacked QKV、ConvRot group size 256を必要とします。追加のtext refiner・time・modulation・出力投影も凍結INT8で読み込み、LoRAの対象は従来の168投影です。BF16モデルを自動でINT8化する機能はありません。
-- 実promptにはMOSS用Qwen3.5-9B text encoderとtokenizerが必要です。VAEは学習後の画像確認に必要で、テキストからのnoise rollout学習自体には使いません。
+| 項目 | 要件 |
+|---|---|
+| ComfyUI | ネイティブMOSS、packed QKV、V3 API、LoRA bypassに対応する版 |
+| Python | 3.10以上 |
+| PyTorch / safetensors | PyTorch 2.9以上 / safetensors 0.7以上 |
+| PyYAML | プロンプトYAMLの読み込みに使用。ComfyUI環境のものを利用 |
+| 基底モデル | 対応するMOSS-Image ConvRot INT8チェックポイント |
+| Text encoder | MOSS用Qwen3.5-9B text encoderとtokenizer |
+| VAE | 生成画像の確認にはFlux2 VAEを使用。学習自体には不要 |
 
-このフォルダーを`ComfyUI/custom_nodes/Comfy-moss-slider-node`として配置し、ComfyUIを再起動します。隣のMOSS-Image・sd-scripts・Krea2リポジトリは実行時依存ではありません。モデルはComfyUIの`diffusion_models`、text encoderは`text_encoders`の登録済み検索先に置きます。既存の`extra_model_paths.yaml`による検索先も利用できます。
+開発・検証基準のComfyUIはcommit `8f04fd6ecf4a548937971e840af2a985529fab76`です。その環境では`comfy-kitchen==0.2.39`、`comfy-aimdo==0.5.6`を使用しました。これらは検証時の構成であり、他の版での動作を保証するものではありません。
 
-## ノードと接続
+### 対応チェックポイント
 
-カテゴリーは`MOSS Image/Slider LoRA`です。
+- `moss_image_sft_int8_convrot.safetensors`のtensor単位量子化設定。
+- StarNodesのヘッダー`_quantization_metadata`形式。`moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors`で実機検証済み。
+
+42 blockのpacked QKV、ConvRot group size 256を前提とします。任意のINT8モデルに対応するものではなく、BF16モデルを自動でINT8化する機能もありません。使用前に**MOSS Slider Inspect INT8**で形式を確認してください。
+
+## インストール
+
+1. ComfyUIの`custom_nodes`ディレクトリで、このリポジトリをcloneします。
+
+   ```sh
+   git clone https://github.com/Shiba-2-shiba/Comfy-moss-slider-node.git
+   ```
+
+2. ComfyUIを実行するPython環境に、上記の依存関係があることを確認します。
+3. 必要なモデルを、ComfyUIに登録された検索先へ配置します。
+
+   | ファイル | 標準の配置先 |
+   |---|---|
+   | ConvRot INT8基底モデル | `ComfyUI/models/diffusion_models/` |
+   | MOSS用text encoder | `ComfyUI/models/text_encoders/` |
+   | Flux2 VAE | `ComfyUI/models/vae/` |
+
+4. ComfyUIを再起動します。ノードは`MOSS Image/Slider LoRA`カテゴリーに表示されます。
+
+`extra_model_paths.yaml`に登録した検索先も利用できます。MOSS-Image・sd-scripts・Krea2の別リポジトリを隣に配置する必要はありません。
+
+## ノード一覧
 
 | ノード | 用途 |
 |---|---|
-| MOSS Slider Inspect INT8 | 大きい重みをロードせず、header・量子化形式・形状を検査 |
-| MOSS Slider Train INT8 | target/positive/negative条件から単方向sliderを学習し、LoRAとreportを出力 |
-| MOSS Slider Train from Prompts | MOSS CLIPとprompts/のYAMLを選び、全レコードを順番に学習 |
-| MOSS Slider Apply INT8 | LoRAのQKVを結合してbypass適用し、INT8基底をmerge・書換せずMODELを返す |
+| MOSS Slider Inspect INT8 | チェックポイントのヘッダー・量子化形式・形状を検査 |
+| MOSS Slider Train from Prompts | MOSS用CLIPとYAMLプロンプトを使って学習 |
+| MOSS Slider Train INT8 | target / positive / negativeのconditioningを手動接続して学習 |
+| MOSS Slider Apply INT8 | 保存済みLoRAをINT8基底へbypass適用し、MODELを出力 |
 
-プロンプト一覧から選ぶ場合は、[MOSS Slider Train from Promptsのworkflow](workflows/moss_slider_train_prompts.json)を開き、標準のLoad CLIP（type=moss_image）を接続して **prompt_yaml** を選択します。[prompts/](prompts/README.md)に加齢・若返りの男女別と成人女性の胸サイズのアニメ調5セットと、実写調の女性加齢1セット（各6件）を同梱しています。stepsは更新総数で、全レコードを一件ずつ循環して使います。選択ファイルの本文とSHA256はmanifestに保存します。
+## 使い方
 
-ノードの既定値と同梱学習ワークフローは、提供された `deaging_slider.json` の学習設定に合わせ、600 steps・rank16・alpha2・学習率0.0002・eta1.5・768×768・rollout_steps=16へ揃えています。seed=0、gradient_checkpointing=true、blocks_to_swap=0、teacher_normalization=neutral_l2です。プロンプト選択型の初期選択は今回使用された `deaging_slider_fullbody.yaml`、出力名は `deaging_slider` です。ワークフローの基底も今回と同じ `moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors` に揃えています。設定の根拠と確認範囲は[prompts/README.md](prompts/README.md)を参照してください。
+### 1. プロンプトセットから学習する
 
-手動でconditioningを接続する場合は従来のMOSS Slider Train INT8を使えます。
+1. [プロンプト選択型ワークフロー](workflows/moss_slider_train_prompts.json)をComfyUIで開きます。
+2. 標準の**Load CLIP**でMOSS用text encoderを選び、`type=moss_image`にします。
+3. Trainノードの`checkpoint_name`で対応するINT8基底を選びます。
+4. `prompt_yaml`で学習するプロンプトセットを選び、学習設定と`output_prefix`を確認します。
+5. ワークフローを実行します。完了すると、LoRAと同名のJSONが`output/moss_sliders/`へ保存されます。
 
-1. 標準の`Load CLIP`でMOSS用text encoderを読み、typeを`moss_image`にします。
-2. 3個の`CLIP Text Encode`を作り、target/positive/negativeへ接続します。例: target=`portrait of an adult person`、positive=`portrait of an elderly adult person`、negative=`portrait of a young adult person`。
-3. Trainの`checkpoint_name`へ指定INT8基底を選びます。まずrank 2・小解像度・1 stepの実機smokeから段階的に増やしてください。
-4. 学習完了後、`output/moss_sliders/`のLoRAと同名JSONを、使用するLoRAフォルダーへ一緒にコピーし、ComfyUIのモデル一覧を更新します。推論用workflowでApplyの`lora_name`にコピー先の保存名を選び、標準`Load Diffusion Model`から**同じ基底**をMODELへ接続します。
-5. ApplyのMODELを通常のMOSS samplerへ渡します。画像確認にはFlux2 VAEを使用します。
+ワークフロー内のモデル名は例です。手元の登録名へ変更してください。初期選択は`deaging_slider_fullbody.yaml`、出力名は`deaging_slider`です。
 
-Trainはqueueごとに学習する出力ノードです。画像比較では保存済みLoRAをApplyで読み、学習用と推論用workflowを分けます。
+初回はrank 2・小解像度・1 stepで、学習から保存・適用まで動くことを確認してから設定を増やしてください。同梱ワークフローの600 stepsは動作確認用の最小設定ではありません。
 
-`workflows/moss_slider_train.json`はComfyUIで開く編集用graph、`workflows/moss_slider_train_api.json`はAPI形式の同じ学習例です。model/text encoderのfilenameは自分の登録名へ置き換えます。
+[prompts/](prompts/)には6セット・各6レコードを同梱しています。
 
-## 条件入力の対応範囲
+| セット | 内容 |
+|---|---|
+| `aging_slider_fullbody.yaml` | アニメ調・成人女性の皮膚の加齢 |
+| `aging_slider_fullbody_male.yaml` | アニメ調・成人男性の皮膚の加齢 |
+| `aging_slider_realistic.yaml` | 実写調・成人女性の加齢 |
+| `deaging_slider_fullbody.yaml` | アニメ調・着衣の成人女性から幼児への年齢・体格変化 |
+| `deaging_slider_fullbody_male.yaml` | アニメ調・着衣の成人男性から幼児への年齢・体格変化 |
+| `breast_size_slider.yaml` | アニメ調・着衣の成人女性の胸サイズ変化 |
 
-各roleはentryが1個、batch 1、shape `[1,L,4096]`、token数1〜4096に限定しています。`attention_mask`があれば右paddingだけをtrimし、条件ごとの真の長さを使います。maskがなければ全tokenを有効とします。
+`steps`はファイル全体でのoptimizer更新総数です。1更新につき1レコードを順番に使うため、6レコードで600 stepsなら各レコードを100回使います。セットごとの効果・構図保持は個別に評価してください。
 
-複数entry、左padding・内部にholeのあるmask、全padding、NaN/Inf、schedule、領域条件、ControlNet、hooks、追加guidance等はエラーにします。`pooled_output`はMOSSでは使いません。通常のMOSS Text Encode出力をそのまま接続する構成が初期対象です。
+独自セットは`prompts/`にUTF-8の`.yaml`または`.yml`として保存し、ComfyUIを再起動すると選択できます。基本形式は次のとおりです。
 
-## 学習中の進捗
+```yaml
+- target: A portrait of an adult person with smooth facial skin.
+  positive: A portrait of an adult person with fine facial wrinkles.
+  negative: A portrait of an adult person with smooth facial skin.
+```
 
-ComfyUIのログに、プロンプトのエンコード件数、checkpointのhash計算、モデルロード、学習開始、各step、保存完了を表示します。学習中の標準進捗バーはoptimizerの更新数で進みます。
+`target`は学習する基準、`positive`は強度+1で向かわせたい特徴、`negative`は弱めたい特徴です。`negative`は学習方向の比較用キャプションです。任意の`neutral`で正規化の参照を指定でき、省略時は`target`を使います。1ファイル1〜64レコード、2 MiBまで対応します。詳細は[プロンプトの形式](prompts/README.md)を参照してください。
 
-~~~text
-MOSS Slider step 2/6 | 1.30s/step | elapsed 4.6s | ETA 9.2s | loss=0.0239832 grad=0.066817
-~~~
+### 2. 手動でconditioningを接続する
 
-秒/stepは、そのstepのrollout・teacher/student予測・backward・optimizer更新を含む実時間です。CUDA/ROCmではGPU処理の完了を待って計測します。elapsedとETAは学習ループの時間で、事前のエンコード・hash・ロードや最後の保存は含みません。ETAは完了済みstepの平均からの目安で、rolloutの長さなどで変動します。各stepのseconds・elapsed_seconds・eta_secondsと、学習ループのtotal_secondsはreport/manifestにも残ります。
+[手動接続型ワークフロー](workflows/moss_slider_train.json)を開き、MOSS用の**Load CLIP**と3個の**CLIP Text Encode**を用意して、Trainの`target_conditioning`・`positive_conditioning`・`negative_conditioning`へ接続します。
 
-現在のDesktop環境では、ComfyUIログのファイルは C:/ComfyUI/user/comfyui_8000.log です。[実機での進捗表示確認](docs/training-progress-20261019.md)。
+各入力はentry 1個・batch 1・shape `[1, L, 4096]`・1〜4096 tokenのMOSS conditioningに対応します。右paddingはmaskに基づいて除去します。複数entry、左padding、schedule、領域条件、ControlNet、hooks、追加guidance等は未対応です。
+
+API形式の例も同梱しています。
+
+- [プロンプト選択型API](workflows/moss_slider_train_prompts_api.json)
+- [手動接続型API](workflows/moss_slider_train_api.json)
+
+**Trainはqueue実行ごとに学習します。** 保存済みLoRAの画像比較には、学習ノードを含めない推論用ワークフローを使用してください。
+
+### 3. 保存したLoRAを適用する
+
+1. `output/moss_sliders/`の`.safetensors`と同名の`.json`を、登録済みのLoRAフォルダー（標準では`ComfyUI/models/loras/`）へ一緒にコピーします。
+2. ComfyUIのモデル一覧を更新します。
+3. 標準の**Load Diffusion Model**で、学習時と同じチェックポイントを読み込みます。
+4. MODELを**MOSS Slider Apply INT8**へ接続し、`lora_name`と`strength`を選びます。
+5. ApplyのMODEL出力を通常のMOSS推論ワークフローへ接続します。
+
+```text
+Load Diffusion Model → MOSS Slider Apply INT8 → sampler
+```
+
+複数のスライダーはApplyノードを連結して使えます。それぞれに学習時と同じ基底のJSONが必要です。
+
+```text
+Load Diffusion Model → Apply A → Apply B → sampler
+```
+
+強度0はそのノードの追加効果を無効にします。負の強度も使えますが、単方向学習のため、望む逆方向の効果は保証しません。同じseed・promptで強度0 / +1 / +2などを比較してください。
+
+専用Applyは基底のSHA256を照合し、基底違い・JSON欠落・通常のweight patch・bypass以外のinjectionを持つMODELを拒否します。標準LoRA loaderでも論理キーは読めますが、基底一致の検証やINT8重みを保持する適用経路は専用Applyと異なります。
 
 ## 学習設定
 
-| 設定 | 内容 |
-|---|---|
-| `steps` | optimizer更新回数。既定600 |
-| `rank` / `alpha` | LoRA rankと`alpha/rank`係数。既定16 / 2（係数0.125） |
-| `learning_rate` | AdamWの学習率。既定0.0002、weight decayは0 |
-| `eta` | teacherの`positive-negative`方向の強さ。既定1.5。samplerのCFG値とは別 |
-| `width` / `height` | 学習解像度。既定768 / 768 |
-| `teacher_normalization` | 既定`neutral_l2`。教師全体のL2ノルムをneutralに合わせる。`none`で従来の教師式を使用 |
-| `rollout_steps` | native shift=5のEuler schedule。既定16 |
-| `gradient_checkpointing` | block単位のnon-reentrant再計算。既定有効 |
-| `blocks_to_swap` | 末尾N blockのI8/scaleをCPUに残し、Linearごとに同期転送。0〜42 |
+| 設定 | 既定値 | 内容 |
+|---|---|---|
+| `steps` | 600 | optimizer更新総数 |
+| `rank` / `alpha` | 16 / 2 | LoRA rankと`alpha/rank`係数 |
+| `learning_rate` | 0.0002 | AdamWの学習率。weight decayは0 |
+| `eta` | 1.5 | teacherの`positive-negative`方向の強さ。samplerのCFGとは別 |
+| `seed` | 0 | 学習時の乱数seed |
+| `width` / `height` | 768 / 768 | 学習解像度 |
+| `rollout_steps` | 16 | native shift=5のEuler scheduleによるnoise rollout |
+| `gradient_checkpointing` | true | block単位の再計算で学習時のメモリ使用量を抑制 |
+| `blocks_to_swap` | 0 | 末尾N blockのINT8重み・scaleをCPUに保持し、Linear計算ごとに転送。0〜42 |
+| `teacher_normalization` | `neutral_l2` | teacher全体のL2ノルムをneutral予測へ合わせる。`none`で無効 |
 
-teacherはLoRA無効の同じ量子化基底から作ります。まず`teacher=base(target)+eta*(base(positive)-base(negative))`を作り、既定の`neutral_l2`ではFP32・sample単位で`teacher *= ||base(neutral)|| / ||teacher||`とします。studentはtarget条件とLoRA強度+1で、raw flow velocityのMSEを学習します。Attentionはteacher/studentともPyTorchの勾配対応経路です。推論時のbackendとの差はモデル・環境別の検証対象です。
+これらはノードと同梱ワークフローの初期値であり、全モデル・全プロンプトに対する推奨最適値ではありません。`rollout_steps=1`では最大ノイズ時刻だけの学習になります。
 
-手動ノードには任意の`neutral_conditioning`、YAMLには任意の`neutral`を指定できます。省略時はtargetを参照し、同梱6ファイル・全36レコードには`neutral=target`を明示しています。targetと同じneutralでは教師予測を再利用し、追加forwardを行いません。異なるneutralを指定した場合は教師forwardが1回増えます。
+### 学習の仕組み
 
-**正規化の既定値は`neutral_l2`です。以前と同じ学習計算を再現する場合は`teacher_normalization=none`を指定してください。** 項目のない既存API・ワークフローも受理しますが、既定のneutral正規化が適用されます。保存済みLoRAにはこの変更は影響しません。
+LoRAを無効にした同じ基底から、次のteacherを作ります。
 
-教師または参照のL2ノルムが`1e-8`以下なら、そのsampleは正規化をスキップします。倍率・参照元・skipの有無はJSONの各stepの`teacher_normalization_info`へ記録します。非有限値になった場合は学習を停止します。異なるneutralではeta=0でも教師全体が再スケールされ得ます。この処理はanchorによる保持lossではなく、服装保持や画像品質の改善は別途比較が必要です。`none`ではneutralの教師予測や正規化を実行しません。
-
-内部は42×4=168 adapterです。QKVはAを共有し、保存時にAをq/k/vへ複製、Bを行方向に分割するため、252論理target・756 tensorの標準LoRAになります。独立したAを持つq/k/v LoRAを同rankへ圧縮して読み込むことはしません。text encoder、text refiner、norm、modulation、入出力投影は学習しません。
-
-LoRA強度0はそのノードの追加効果を無効にし、負値も適用できます。単独適用の強度0は基底に一致し、連結時の強度0は前段までの効果を保持します。単方向学習なので、負値で望む逆方向の画質効果が得られる保証はありません。領域mask、bidirectional、画像dataset、resumeは初期版の対象外です。
-
-## 保存と推論
-
-出力はComfyUIに設定されたoutputディレクトリ内の`moss_sliders/`です。現在の環境では`C:\ComfyUI\output\moss_sliders\`になります。追加モデルパスやLoRA検索先の登録順には依存しません。保存先のフルパスはノードの表示、ログ、reportの`lora_path`と`manifest_path`で確認できます。`lora_name`出力はoutputからの相対パスです。Applyや標準LoRA loaderで使用するには、LoRAと同名JSONを登録済みLoRAフォルダーへ一緒にコピーし、モデル一覧を更新してください。同名ファイルは上書きせずsuffixを付けます。`.safetensors`と同名の`.json`を同じ名前のまま一緒に保持してください。manifestには基底全体とLoRA本体のSHA256、設定、実行版、loss、使用した時刻等を記録します。JSONを配置してから完成したLoRAを最終名へrenameするcommit方式です。プロセスが途中終了しても、JSONなしの未完成LoRAを最終名で公開しません。孤立JSON等が残った場合も再実行は既存名を上書きしません。
-
-専用Applyは標準`Load Diffusion Model`由来のMODELから基底を識別し、manifestのSHA256と照合します。`Load Diffusion Model → Apply A → Apply B → sampler`のようにMODELを連結し、複数sliderを個別のstrengthで加算できます。同じLoRAの重ね掛けにも対応します。各LoRAは同じ基底のmanifestが必要です。別基底・通常のweight patchを持つMODEL・bypass以外のinjectionを持つMODEL・manifest欠落は拒否します。QKVをpackedキーへ戻してComfyUIのbypassを使い、weight mergeや再量子化を行いません。前段のbypassを保持し、解除時は逆順に戻すため、連結後も元のINT8重みを保持します。
-
-保存LoRAの論理キーは標準LoRA loaderにも対応します。ただし、標準loaderのmerge/requantizeは専用Applyの「INT8基底を保持する」経路と同じ数値になるとは限らず、標準loaderはこのmanifestの基底一致を強制検証しません。
-
-## CPU検証
-
-開発用のpytestがある環境で、プロジェクト直下から実行します。実ComfyUIを明示し、CPU設定をimport前に適用します。
-
-```powershell
-python tools/inspect_checkpoint.py --checkpoint "../moss_image_sft_int8_convrot.safetensors" --metadata-only
-python tools/run_cpu_validation.py --comfyui-root "../ComfyUI" --report "test-results/cpu-validation.json"
-python -m pytest -m "not gpu" -q
+```text
+teacher = base(target) + eta × (base(positive) − base(negative))
 ```
 
-検査CLIは基底行列を読みません。全ファイルhashを求める場合だけ`--full-hash`を指定します。学習jobの実行時にはmanifest用に全hashを計算します。
+既定の`neutral_l2`では、FP32・sample単位で`teacher *= ||base(neutral)|| / ||teacher||`を適用します。studentはtarget条件・LoRA強度+1で、raw flow velocityのMSEを学習します。
 
-CPU suiteでは、小型native MOSSへの逐次ロード、ConvRot出力・input gradient、FP64 gradcheck、早い層のLoRA勾配、checkpointing、全42層の標準key mapping、±/0 bypass、基底不変、条件入力、atomic export、cancel後の復旧、V3 metadataを検証します。巨大なMOSS実モデルでのGPU forward/backwardは含めません。
+`neutral`がtargetと同じ場合は予測を再利用し、異なる場合はteacherのforwardが1回増えます。L2ノルムが`1e-8`以下なら正規化をスキップし、非有限値では停止します。倍率・参照元・skipの有無はJSONに記録します。neutral正規化は、服装や構図を保持する追加lossではありません。
 
-`test-results/cpu-validation.json`と各stageログが検証結果です。ComfyUI依存不足等はintegrationを`BLOCKED`として記録し、mockによる成功に置き換えません。
+**以前の未正規化の学習動作を再現する場合は`teacher_normalization=none`を明示してください。** この項目のない既存ワークフロー・APIにも既定の`neutral_l2`が適用されます。保存済みLoRAへの影響はありません。
 
-## 実機へ移るとき
+学習対象は42 block × 4投影の168 adapterです。QKVはAを共有し、保存時にq/k/vへ展開して252論理target・756 tensorのLoRAを出力します。text encoder・text refiner・norm・modulation・入出力投影は学習しません。領域mask、bidirectional学習、画像dataset、学習resumeは未対応です。
 
-指定基底でLoRAなしのbaselineを保存し、rank2・1 stepから始めます。その後10/100 step、checkpointing/staging、cancel/retry、peak VRAM/RAMとstep時間を確認します。画像は同じseedで強度-2/-1/0/+1/+2と未見promptを比較してください。CPUでの数値整合から必要VRAMや生成品質は判定できません。
+## 出力と進捗
 
-実装の根拠と段階別条件は[実装計画書](.omx/plans/2026-10-19-moss-slider-implementation-plan.md)、実装・検証記録は[進捗記録](.omx/implementation-progress.md)を参照してください。
+保存先は、ComfyUIに設定されたoutputディレクトリの`moss_sliders/`です。フルパスはノードの表示・ログ・reportの`lora_path`と`manifest_path`に表示します。`lora_name`出力はoutputからの相対パスであり、LoRAフォルダーへの自動登録は行いません。
+
+`.safetensors`と同名の`.json`は常に一緒に保持してください。JSONには基底とLoRAのSHA256、設定、実行版、loss、step時間、プロンプトセットの本文とSHA256などを記録します。同名ファイルは上書きせずsuffixを付け、JSONを配置してから完成したLoRAを最終名へ移します。
+
+ComfyUIのコンソール・ログにはエンコード、hash計算、ロード、各step、保存完了が表示されます。
+
+```text
+MOSS Slider step 2/6 | 1.30s/step | elapsed 4.6s | ETA 9.2s | loss=0.0239832 grad=0.066817
+```
+
+進捗バーはoptimizerの更新数で進みます。ETAは学習ループの目安で、事前のエンコード・hash計算・モデルロードや最後の保存時間は含みません。
+
+## 検証範囲
+
+AMD Radeon AI PRO R9700と`moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors`で、rank 2・1 / 10 stepの学習、保存、強度−1 / 0 / +1での推論を確認しています。小型native MOSSのCPUテストでは、量子化計算・勾配・checkpointing・LoRA mapping・bypass・保存処理・入力検証を扱います。
+
+これは最低必要VRAMや生成品質を示すものではありません。長時間学習や他GPUでの動作、各プロンプトセットの効果は別途確認が必要です。過去の検証環境・条件は[モデル互換性の記録](docs/model-compatibility-20261019.md)を参照してください。記録内のローカルパスや生成物は検証時のもので、配布物には含まれません。
+
+### 開発用のCPU検証
+
+ComfyUIと開発用の`pytest`・`ruff`・`mypy`を用意し、リポジトリ直下で実行します。PythonはComfyUIの依存を利用できる環境を使い、パスは手元の配置に置き換えてください。
+
+```sh
+python tools/inspect_checkpoint.py --checkpoint "/path/to/model.safetensors" --metadata-only
+python tools/run_cpu_validation.py --comfyui-root "/path/to/ComfyUI" --report "test-results/cpu-validation.json"
+```
+
+検査CLIは基底行列を読みません。全ファイルのhashが必要な場合は`--full-hash`を指定します。CPU検証のreportとstageログはローカルの`test-results/`へ出力します。実ComfyUIの依存不足は`BLOCKED`として記録し、GPUの実モデル検証とは区別します。
+
+## 問題が起きた場合
+
+- **ノードが表示されない:** ComfyUIの起動ログでimportエラーを確認し、V3 API・MOSS対応とPython環境の依存関係を確認してください。
+- **モデルが一覧にない:** `diffusion_models` / `text_encoders` / `loras`の登録先とファイル名を確認し、一覧を更新してください。
+- **Applyでエラーになる:** 学習時と同じ基底を使い、LoRAと同名のJSONが同じフォルダーにあることを確認してください。
+- **メモリが不足する:** rank・解像度を下げ、`gradient_checkpointing`や`blocks_to_swap`を調整してください。必要VRAMの下限は未測定です。
+
+不具合報告は[GitHub Issues](https://github.com/Shiba-2-shiba/Comfy-moss-slider-node/issues)へ、ComfyUIの版、OS / GPU、Python / PyTorch、モデル名、再現手順、エラーログを添えてください。
+
+## 参考・第三者ライセンス
+
+MOSS-Image、ComfyUI、Concept Sliders、Krea2 Slider、sd-scriptsなどを参考にしています。参照元と第三者ライセンスは[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)と[licenses/](licenses/)を参照してください。モデル重みの利用条件は、各配布元で確認してください。
