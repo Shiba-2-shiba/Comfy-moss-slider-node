@@ -156,8 +156,8 @@ def test_global_metadata_rejects_incomplete_or_unsafe_schema(tmp_path, kind):
     assert inspect_checkpoint(path, config=config)["status"] == "INVALID"
 
 
-@pytest.mark.parametrize("conflict", [False, True])
-def test_global_and_tensor_quantization_configs_must_agree(tmp_path, conflict):
+@pytest.mark.parametrize("tensor_config", ["matching", "different_group", "invalid_json"])
+def test_global_quantization_configs_override_tensor_configs_like_comfyui(tmp_path, tensor_config):
     from safetensors import safe_open
     from safetensors.torch import load_file
 
@@ -166,11 +166,112 @@ def test_global_and_tensor_quantization_configs_must_agree(tmp_path, conflict):
     tensors = {k: v.clone() for k, v in load_file(path).items()}
     with safe_open(str(path), framework="pt") as source:
         metadata = source.metadata()
-    spec = {"format": "int8_tensorwise", "convrot": True, "convrot_groupsize": 64 if conflict else 256}
+    spec = {"format": "int8_tensorwise", "convrot": True,
+            "convrot_groupsize": 64 if tensor_config == "different_group" else 256}
+    raw = b"{" if tensor_config == "invalid_json" else json.dumps(spec).encode()
     tensors["model.diffusion_model.layers.0.proj.qkv.comfy_quant"] = torch.tensor(
-        list(json.dumps(spec).encode()), dtype=torch.uint8)
+        list(raw), dtype=torch.uint8)
     save_file(tensors, str(path), metadata=metadata)
     report = inspect_checkpoint(path, config=config)
-    assert report["status"] == ("INVALID" if conflict else "SUPPORTED")
-    if conflict:
-        assert "Conflicting" in report["reason"]
+    assert report["status"] == "SUPPORTED", report
+    assert report["quantization_metadata"]["layers.0.proj.qkv"]["convrot_groupsize"] == 256
+
+
+@pytest.mark.parametrize("envelope", [{}, {"format_version": "1.0"},
+                                     {"format": "converter-specific", "format_version": 2}])
+@pytest.mark.parametrize("prefix", ["", "diffusion_model.", "model.diffusion_model."])
+def test_global_metadata_uses_layer_specs_instead_of_converter_labels(tmp_path, envelope, prefix):
+    from safetensors import safe_open
+    from safetensors.torch import load_file
+
+    path = tmp_path / "metadata.safetensors"
+    config = metadata_checkpoint(path)
+    with safe_open(str(path), framework="pt") as source:
+        layers = json.loads(source.metadata()["_quantization_metadata"])["layers"]
+    layers = {prefix + name.removeprefix("model.diffusion_model."): spec for name, spec in layers.items()}
+    tensors = {k: v.clone() for k, v in load_file(path).items()}
+    save_file(tensors, str(path), metadata={"_quantization_metadata": json.dumps({**envelope, "layers": layers})})
+    report = inspect_checkpoint(path, config=config)
+    assert report["status"] == "SUPPORTED", report
+    assert report["quantized_linears"] == 24
+
+
+@pytest.mark.parametrize("location", ["global", "tensor"])
+@pytest.mark.parametrize("spec", [
+    {"format": "int8_tensorwise", "convrot": True},
+    {"format": "int8_tensorwise", "params": {"convrot": True, "convrot_groupsize": 256}},
+    {"format": "int8_tensorwise", "convrot": True, "convrot_groupsize": 256,
+     "params": {"convrot": False, "convrot_groupsize": 64}},
+    {"format": "int8_tensorwise", "convrot": True, "convrot_groupsize": "256", "params": None},
+])
+def test_layer_spec_defaults_and_params_match_comfyui(tmp_path, location, spec):
+    from safetensors.torch import load_file
+
+    path = tmp_path / "normalized.safetensors"
+    config = minimal_checkpoint(path)
+    tensors = {k: v.clone() for k, v in load_file(path).items()
+               if not k.endswith(".comfy_attention.config")}
+    layers = {}
+    for name in list(tensors):
+        if name.endswith(".comfy_quant"):
+            layers[name.removesuffix(".comfy_quant")] = spec
+            if location == "global":
+                del tensors[name]
+            else:
+                tensors[name] = torch.tensor(list(json.dumps(spec).encode()), dtype=torch.uint8)
+    metadata = {"_quantization_metadata": json.dumps({"layers": layers})} if location == "global" else {}
+    save_file(tensors, str(path), metadata=metadata)
+    report = inspect_checkpoint(path, config=config)
+    assert report["status"] == "SUPPORTED", report
+    assert report["attention_configs"] == 0
+    for actual in report["quantization_metadata"].values():
+        assert actual["convrot"] is True
+        assert actual["convrot_groupsize"] == 256
+
+
+@pytest.mark.parametrize("spec,status", [
+    ({"format": "float8_e4m3fn", "convrot": True}, "UNSUPPORTED"),
+    ({"format": "int8_tensorwise"}, "UNSUPPORTED"),
+    ({"format": "int8_tensorwise", "params": {"convrot": False}}, "UNSUPPORTED"),
+    ({"format": "int8_tensorwise", "convrot": True, "per_row": False}, "UNSUPPORTED"),
+    ({"format": "int8_tensorwise", "params": {"convrot": True, "convrot_groupsize": 64}}, "UNSUPPORTED"),
+    ({"format": "int8_tensorwise", "convrot": True, "convrot_groupsize": "invalid"}, "INVALID"),
+    (None, "INVALID"),
+])
+def test_global_effective_spec_is_validated_even_when_tensor_config_is_supported(tmp_path, spec, status):
+    from safetensors.torch import load_file
+
+    path = tmp_path / "bad_global.safetensors"
+    config = minimal_checkpoint(path)
+    tensors = {k: v.clone() for k, v in load_file(path).items()}
+    save_file(tensors, str(path), metadata={"_quantization_metadata": json.dumps({
+        "layers": {"layers.0.proj.qkv": spec}})})
+    report = inspect_checkpoint(path, config=config)
+    assert report["status"] == status, report
+
+
+@pytest.mark.parametrize("metadata", [[], {}, {"layers": []}, {"layers": None}])
+def test_malformed_global_metadata_is_still_rejected(tmp_path, metadata):
+    from safetensors.torch import load_file
+
+    path = tmp_path / "malformed.safetensors"
+    config = minimal_checkpoint(path)
+    tensors = {k: v.clone() for k, v in load_file(path).items()}
+    save_file(tensors, str(path), metadata={"_quantization_metadata": json.dumps(metadata)})
+    assert inspect_checkpoint(path, config=config)["status"] == "INVALID"
+
+
+def test_partial_global_metadata_falls_back_to_tensor_configs_and_reports_mixed_sources(tmp_path):
+    from safetensors.torch import load_file
+
+    path = tmp_path / "mixed.safetensors"
+    config = minimal_checkpoint(path)
+    tensors = {k: v.clone() for k, v in load_file(path).items()
+               if not k.endswith(".comfy_attention.config")}
+    spec = {"format": "int8_tensorwise", "params": {"convrot": True}}
+    save_file(tensors, str(path), metadata={"_quantization_metadata": json.dumps({
+        "layers": {"layers.0.proj.qkv": spec}})})
+    report = inspect_checkpoint(path, config=config)
+    assert report["status"] == "SUPPORTED", report
+    assert report["quantization_config_source"] == "mixed"
+    assert report["quantized_linears"] == 8

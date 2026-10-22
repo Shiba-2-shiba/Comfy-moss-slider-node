@@ -161,11 +161,24 @@ def _global_quantization_specs(header):
         metadata = json.loads(raw, object_pairs_hook=_unique_pairs)
     except (UnicodeError, json.JSONDecodeError) as error:
         raise ValueError("Invalid global quantization metadata JSON") from error
-    if (not isinstance(metadata, dict) or metadata.get("format") != "int8_convrot"
-            or not isinstance(metadata.get("layers"), dict)):
-        raise ValueError("Invalid global ConvRot quantization metadata")
+    # ComfyUI convert_old_quants consumes layers, not converter-specific envelope labels.
+    if not isinstance(metadata, dict) or not isinstance(metadata.get("layers"), dict):
+        raise ValueError("Invalid global quantization metadata: layers must be an object")
     layers = metadata["layers"]
     return {name: layers[key] for name, key in canonical_keys(layers).items()}
+
+
+def _normalize_quantization_spec(spec):
+    """Resolve the ConvRot fields like ComfyUI's mixed-precision Linear loader."""
+    params = spec.get("params", {})
+    if not isinstance(params, dict):
+        params = {}
+    try:
+        group_size = int(spec.get("convrot_groupsize", params.get("convrot_groupsize", 256)))
+    except (TypeError, ValueError, OverflowError) as error:
+        raise ValueError("Invalid ConvRot group size") from error
+    return {**spec, "convrot": spec.get("convrot", params.get("convrot", False)),
+            "convrot_groupsize": group_size}
 
 
 def inspect_checkpoint(path, *, config=None):
@@ -211,6 +224,7 @@ def inspect_checkpoint(path, *, config=None):
             if item["shape"] != [config.dim // config.num_heads // 8] or item["dtype"] != "F32":
                 raise ValueError("Invalid legacy rope.bands shape/dtype")
         quantization_specs, attention_configs = {}, {}
+        quantization_sources = set()
         with Path(path).open("rb") as stream:
             for weight_name in sorted(quantized_weights):
                 prefix = weight_name.removesuffix(".weight")
@@ -221,14 +235,18 @@ def inspect_checkpoint(path, *, config=None):
                 scale = header[keys[scale_name]]
                 if scale["dtype"] != "F32" or scale["shape"] != [shape[0], 1]:
                     raise ValueError(f"Invalid per-row scale shape/dtype: {prefix}")
-                spec = (global_specs or {}).get(prefix)
-                if spec_name in keys:
-                    tensor_spec = _read_config(stream, header[keys[spec_name]], identity["header_bytes"] + 8)
-                    if spec is not None and spec != tensor_spec:
-                        raise ValueError(f"Conflicting tensor/global quantization config: {prefix}")
-                    spec = tensor_spec
+                # convert_old_quants overwrites .comfy_quant from global layers when both exist.
+                if prefix in (global_specs or {}):
+                    spec = global_specs[prefix]
+                    quantization_sources.add("global_metadata")
+                elif spec_name in keys:
+                    spec = _read_config(stream, header[keys[spec_name]], identity["header_bytes"] + 8)
+                    quantization_sources.add("tensor_configs")
+                else:
+                    spec = None
                 if not isinstance(spec, dict):
                     raise ValueError(f"Missing INT8 quantization config: {prefix}")
+                spec = _normalize_quantization_spec(spec)
                 if (spec.get("format") != "int8_tensorwise" or spec.get("convrot") is not True
                         or spec.get("per_row", True) is not True):
                     return {**report, "status": "UNSUPPORTED", "reason": f"Unsupported ConvRot format: {prefix}"}
@@ -240,16 +258,15 @@ def inspect_checkpoint(path, *, config=None):
             for index in range(config.num_layers):
                 name = f"layers.{index}.comfy_attention.config"
                 if name not in keys:
-                    if global_specs is not None:
-                        continue  # Global ConvRot files use native default attention unless explicitly configured.
-                    raise ValueError(f"Missing attention config: {name}")
+                    continue  # Native attention defaults are independent of the quantization metadata container.
                 value = _read_config(stream, header[keys[name]], identity["header_bytes"] + 8)
                 if value != {"attention": "comfy_kitchen_int8"}:
                     return {**report, "status": "UNSUPPORTED", "reason": f"Unsupported attention config: {name}"}
                 attention_configs[name] = value
         return {**report, "status": "SUPPORTED", "quantized_linears": len(quantization_specs),
                 "quantization_metadata": quantization_specs,
-                "quantization_config_source": "global_metadata" if global_specs is not None else "tensor_configs",
+                "quantization_config_source": (next(iter(quantization_sources))
+                                               if len(quantization_sources) == 1 else "mixed"),
                 "attention_configs": len(attention_configs), "attention_metadata": attention_configs,
                 "tensor_count": len(keys)}
     except (ValueError, KeyError, TypeError, OSError) as error:

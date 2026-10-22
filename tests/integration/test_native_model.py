@@ -203,3 +203,46 @@ def test_global_quantized_non_adapter_linears_preserve_bias_and_gradients(native
     assert not any(p.requires_grad for name, p in model.named_parameters() if "lora_" not in name)
     for name, value in model.named_buffers():
         torch.testing.assert_close(value, base[name], rtol=0, atol=0)
+
+
+@pytest.mark.parametrize("metadata_source", ["versioned_global", "tensor_params"])
+def test_comfyui_metadata_variants_load_predict_and_backpropagate(native_checkpoint, metadata_source):
+    import json
+    import comfy.utils
+    from safetensors.torch import load_file, save_file
+    from moss_slider_node.lora import inject_lora, lora_parameters
+
+    path, config, dense_state = native_checkpoint
+    tensors = {k: v.clone() for k, v in load_file(path).items()
+               if not k.endswith(".comfy_attention.config")}
+    spec = {"format": "int8_tensorwise", "params": {"convrot": True}}
+    layers = {}
+    for name in list(tensors):
+        if name.endswith(".comfy_quant"):
+            layers[name.removesuffix(".comfy_quant")] = spec
+            if metadata_source == "tensor_params":
+                tensors[name] = torch.tensor(list(json.dumps(spec).encode()), dtype=torch.uint8)
+    metadata = ({"_quantization_metadata": json.dumps({"format_version": "1.0", "layers": layers})}
+                if metadata_source == "versioned_global" else {})
+    # Exercise the actual ComfyUI envelope conversion, including global-over-tensor precedence.
+    converted, _ = comfy.utils.convert_old_quants(tensors.copy(), metadata=metadata)
+    for name in layers:
+        assert json.loads(converted[name + ".comfy_quant"].numpy().tobytes()) == spec
+    variant = path.with_name(metadata_source + ".safetensors")
+    save_file({"model.diffusion_model." + k: v for k, v in tensors.items()}, str(variant), metadata=metadata)
+    model, info = load_training_model(variant, config=config, compute_dtype=torch.float32)
+    assert info["attention_configs"] == 0
+    assert info["quantized_linears"] == 8
+    reference = create_native_model(config, device="cpu", dtype=torch.float32)
+    reference.load_state_dict(dense_state)
+    x, context, sigma = torch.randn(1, 128, 1, 2), torch.randn(1, 3, 4096), torch.tensor([0.4])
+    with training_context(reference), torch.no_grad():
+        expected = reference(x, sigma, context)
+    inject_lora(model, rank=2, alpha=2)
+    with training_context(model):
+        actual = MossTrainingAdapter(model, dtype=torch.float32).predict_velocity(x, sigma, context)
+        actual.square().mean().backward()
+    torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-4)
+    gradients = [p.grad for p in lora_parameters(model)]
+    assert all(g is not None and torch.isfinite(g).all() for g in gradients)
+    assert model.layers[0].proj["qkv"].lora_B.grad.abs().sum() > 0

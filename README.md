@@ -30,8 +30,11 @@ INT8の基底モデルを凍結したまま、FP32のLoRAパラメーターだ�
 
 ### 対応チェックポイント
 
-- `moss_image_sft_int8_convrot.safetensors`のtensor単位量子化設定。
-- StarNodesのヘッダー`_quantization_metadata`形式。`moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors`で実機検証済み。
+- 層ごとの`.comfy_quant` tensor設定、またはヘッダーの`_quantization_metadata.layers`設定を持つConvRot INT8モデル。
+- ComfyUI本体と同様に層ごとの設定を読み、トップ階層の`format`・`format_version`・変換ツール名では判定しません。両方の設定がある層ではヘッダー側を優先します。
+- ConvRot設定は層の直下、または`params`内から読み取ります。`convrot_groupsize`省略時は256、Attention設定省略時はnative既定を使用します。
+
+`moss_image_sft_int8_convrot.safetensors`および`moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors`で実機検証済みです。
 
 42 blockのpacked QKV、ConvRot group size 256を前提とします。任意のINT8モデルに対応するものではなく、BF16モデルを自動でINT8化する機能もありません。使用前に**MOSS Slider Inspect INT8**で形式を確認してください。
 
