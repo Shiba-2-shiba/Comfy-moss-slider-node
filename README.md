@@ -36,7 +36,18 @@ INT8の基底モデルを凍結したまま、FP32のLoRAパラメーターだ�
 
 `moss_image_sft_int8_convrot.safetensors`および`moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors`で実機検証済みです。
 
-42 blockのpacked QKV、ConvRot group size 256を前提とします。任意のINT8モデルに対応するものではなく、BF16モデルを自動でINT8化する機能もありません。使用前に**MOSS Slider Inspect INT8**で形式を確認してください。
+対応可否はモデル名ではなく、各層の量子化設定と実際の重み・スケールの形状で判定します。同じMOSS-Image構造の派生モデルであれば、metadataの表現が上記の範囲で異なっていても、モデル名ごとの追加処理なしで利用できる設計です。
+
+| 項目 | 対応条件 |
+|---|---|
+| モデル構造 | 42 blockのpacked QKV。各パラメーターの形状が既存のnative MOSS-Image構造と一致すること |
+| LoRA対象の基底重み | `int8_tensorwise`形式のINT8重みで、ConvRotが有効であること |
+| ConvRot group size | 256。省略時も256として解釈 |
+| 量子化スケール | 各出力行に対応するFP32スケール。形状は`[out_features, 1]` |
+
+他の量子化方式、異なるモデル構造、BF16モデルの自動INT8化には対応していません。
+
+初めて使うモデルは、まず**MOSS Slider Inspect INT8**で`SUPPORTED`になることを確認してください。これは構造・形式の検査に合格したことを示します。続いてrank 2・小解像度・1 stepで学習・保存・適用を確認してから、学習設定を増やしてください。他モデルの長時間学習や品質は、モデル・プロンプトごとの確認が必要です。
 
 ## インストール
 
