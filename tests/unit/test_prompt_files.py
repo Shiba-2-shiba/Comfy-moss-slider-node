@@ -80,11 +80,15 @@ def test_packaged_presets_are_loadable_training_records():
         "aging_slider_fullbody.yaml": 6,
         "aging_slider_fullbody_male.yaml": 6,
         "aging_slider_realistic.yaml": 6,
+        "aging_slider_realistic_male.yaml": 6,
         "breast_size_slider.yaml": 6,
         "breast_size_slider_realistic.yaml": 12,
         "deaging_slider_fullbody.yaml": 6,
         "deaging_slider_fullbody_male.yaml": 6,
-        "hatsune_miku_identity_no_costume.yaml": 18,
+        "deaging_slider_realistic.yaml": 6,
+        "deaging_slider_realistic_male.yaml": 6,
+        "hatsune_miku_identity_no_costume.yaml": 6,
+        "hatsune_miku_identity_no_costume_realistic.yaml": 6,
         "realistic_female_only_deaging_slider_v2.yaml": 12,
     }
     assert set(names) == set(expected_counts)

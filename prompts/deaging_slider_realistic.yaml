@@ -1,0 +1,150 @@
+# Photographic female deaging slider; positive strength changes a clothed adult into a clothed preschool child.
+# Adapted from deaging_slider_fullbody.yaml; record order, clothing, pose, framing, and scenes are retained.
+# Select this separate preset for realistic MOSS derivatives such as MoodyMoss.
+# target == negative == neutral; neutral is an L2 reference, not a preservation loss.
+# Requires new training on the selected base; visual quality has not been validated.
+# Six records: four full-body views and two waist-up views; no image dataset or region mask.
+
+# 01
+- target: &realistic_base_01 >-
+    A realistic color photograph depicts a fully clothed adult woman. She has a slender adult
+    build with a narrow waist, long arms and legs, natural adult head-to-body proportions, an oval
+    face, and dark brown shoulder-length straight hair. The face, neck, and hands have smooth
+    adult skin with subtle natural shading. She wears a dark gray short-sleeved collared blouse
+    tucked into a straight ankle-length dark skirt, and plain flat shoes. The figure stands alone
+    facing the viewer, with a neutral expression and relaxed arms at the sides. Both hands are
+    visible. A centered front view shows the entire figure from head to toe, with both feet and
+    the studio floor visible. A pale gray studio wall and a bright floor form a simple background.
+    Soft, even light reveals the fabric and skin, with a restrained neutral palette.
+  positive: >-
+    A realistic color photograph depicts a fully clothed preschool girl about four years old. She
+    has a small child's build, a relatively large head, a round face with soft cheeks, short arms
+    and legs, and small hands. Dark brown straight hair reaches the shoulders. The face, neck, and
+    hands have smooth child skin. She wears a dark gray short-sleeved collared blouse tucked into
+    a straight ankle-length dark skirt, and plain flat shoes. The figure stands alone facing the
+    viewer, with a neutral expression and relaxed arms at the sides. Both hands are visible. A
+    centered front view shows the entire figure from head to toe, with both feet and the studio
+    floor visible. A pale gray studio wall and a bright floor form a simple background. Soft, even
+    light reveals the fabric and skin, with a restrained neutral palette.
+  negative: *realistic_base_01
+  neutral: *realistic_base_01
+
+# 02
+- target: &realistic_base_02 >-
+    A realistic color photograph depicts a fully clothed adult woman. She has a slender adult
+    build with a narrow waist, long arms and legs, natural adult head-to-body proportions, an oval
+    face, and dark brown shoulder-length straight hair. The face, neck, and hands have smooth
+    adult skin with subtle natural shading. She wears an opaque cream knit top with a round
+    neckline, straight navy trousers, and plain dark shoes. The figure stands beside a plain
+    wooden bench, looking toward the viewer, with one hand resting on the bench and the other
+    hanging naturally. A three-quarter view shows the entire figure from head to toe, with clear
+    space around the shoes. A light beige studio wall and a matte wooden floor surround the bench.
+    Broad window light creates gentle shadows and warm, muted colors.
+  positive: >-
+    A realistic color photograph depicts a fully clothed preschool girl about four years old. She
+    has a small child's build, a relatively large head, a round face with soft cheeks, short arms
+    and legs, and small hands. Dark brown straight hair reaches the shoulders. The face, neck, and
+    hands have smooth child skin. She wears an opaque cream knit top with a round neckline,
+    straight navy trousers, and plain dark shoes. The figure stands beside a plain wooden bench,
+    looking toward the viewer, with one hand resting on the bench and the other hanging naturally.
+    A three-quarter view shows the entire figure from head to toe, with clear space around the
+    shoes. A light beige studio wall and a matte wooden floor surround the bench. Broad window
+    light creates gentle shadows and warm, muted colors.
+  negative: *realistic_base_02
+  neutral: *realistic_base_02
+
+# 03
+- target: &realistic_base_03 >-
+    A realistic color photograph depicts a fully clothed adult woman. She has a slender adult
+    build with a narrow waist, long arms and legs, natural adult head-to-body proportions, an oval
+    face, and dark brown shoulder-length straight hair. The face, neck, and hands have smooth
+    adult skin with subtle natural shading. She wears an opaque pale blue long-sleeved shirt, a
+    straight dark ankle-length skirt, and low black shoes. The figure walks slowly toward the
+    viewer with a composed expression, upright posture, and both hands visible beside the body. A
+    front view shows the whole figure from head to toe against the courtyard path. A quiet
+    courtyard with a pale stone path and a plain brick wall fills the background. Diffuse daylight
+    gives the scene a calm, cool palette.
+  positive: >-
+    A realistic color photograph depicts a fully clothed preschool girl about four years old. She
+    has a small child's build, a relatively large head, a round face with soft cheeks, short arms
+    and legs, and small hands. Dark brown straight hair reaches the shoulders. The face, neck, and
+    hands have smooth child skin. She wears an opaque pale blue long-sleeved shirt, a straight
+    dark ankle-length skirt, and low black shoes. The figure walks slowly toward the viewer with a
+    composed expression, upright posture, and both hands visible beside the body. A front view
+    shows the whole figure from head to toe against the courtyard path. A quiet courtyard with a
+    pale stone path and a plain brick wall fills the background. Diffuse daylight gives the scene
+    a calm, cool palette.
+  negative: *realistic_base_03
+  neutral: *realistic_base_03
+
+# 04
+- target: &realistic_base_04 >-
+    A realistic color photograph depicts a fully clothed adult woman. She has a slender adult
+    build with a narrow waist, long arms and legs, natural adult head-to-body proportions, an oval
+    face, and dark brown shoulder-length straight hair. The face, neck, and hands have smooth
+    adult skin with subtle natural shading. She wears an opaque loose white long-sleeved shirt,
+    straight olive trousers, and simple flat shoes. The figure sits upright on a simple wooden
+    chair, looking toward the viewer, with the hands resting separately on the knees. A
+    three-quarter view includes the whole seated figure, both feet, and the legs of the chair. The
+    chair stands in a plain room with a light gray wall and a warm wooden floor. Soft side
+    lighting models the face and hands without hard shadows.
+  positive: >-
+    A realistic color photograph depicts a fully clothed preschool girl about four years old. She
+    has a small child's build, a relatively large head, a round face with soft cheeks, short arms
+    and legs, and small hands. Dark brown straight hair reaches the shoulders. The face, neck, and
+    hands have smooth child skin. She wears an opaque loose white long-sleeved shirt, straight
+    olive trousers, and simple flat shoes. The figure sits upright on a simple wooden chair,
+    looking toward the viewer, with the hands resting separately on the knees. A three-quarter
+    view includes the whole seated figure, both feet, and the legs of the chair. The chair stands
+    in a plain room with a light gray wall and a warm wooden floor. Soft side lighting models the
+    face and hands without hard shadows.
+  negative: *realistic_base_04
+  neutral: *realistic_base_04
+
+# 05
+- target: &realistic_base_05 >-
+    A realistic color photograph depicts a fully clothed adult woman. She has a slender adult
+    build with a narrow waist, long arms and legs, natural adult head-to-body proportions, an oval
+    face, and dark brown shoulder-length straight hair. The face, neck, and hands have smooth
+    adult skin with subtle natural shading. She wears an opaque muted burgundy blouse with a small
+    collar and a dark high-waisted skirt. The figure stands facing the viewer with a neutral
+    expression and both hands loosely joined in front of the waist. A waist-up front view includes
+    the head, neck, torso, forearms, and both hands. A plain pale gray wall fills the background.
+    Soft studio lighting produces clear facial features, subdued colors, and gently shaded fabric
+    folds.
+  positive: >-
+    A realistic color photograph depicts a fully clothed preschool girl about four years old. She
+    has a small child's build, a relatively large head, a round face with soft cheeks, short arms
+    and legs, and small hands. Dark brown straight hair reaches the shoulders. The face, neck, and
+    hands have smooth child skin. She wears an opaque muted burgundy blouse with a small collar
+    and a dark high-waisted skirt. The figure stands facing the viewer with a neutral expression
+    and both hands loosely joined in front of the waist. A waist-up front view includes the head,
+    neck, torso, forearms, and both hands. A plain pale gray wall fills the background. Soft
+    studio lighting produces clear facial features, subdued colors, and gently shaded fabric
+    folds.
+  negative: *realistic_base_05
+  neutral: *realistic_base_05
+
+# 06
+- target: &realistic_base_06 >-
+    A realistic color photograph depicts a fully clothed adult woman. She has a slender adult
+    build with a narrow waist, long arms and legs, natural adult head-to-body proportions, an oval
+    face, and dark brown shoulder-length straight hair. The face, neck, and hands have smooth
+    adult skin with subtle natural shading. She wears an opaque soft gray sweater with a round
+    neckline and straight dark trousers. The figure sits upright at a plain wooden table, looking
+    toward the viewer, with open relaxed hands resting on the tabletop. A waist-up three-quarter
+    view includes the head, neck, torso, forearms, and both hands on the table. A plain cream wall
+    forms the background, with the wooden tabletop in the foreground. Diffuse window light gives
+    the image warm highlights and gentle shadows.
+  positive: >-
+    A realistic color photograph depicts a fully clothed preschool girl about four years old. She
+    has a small child's build, a relatively large head, a round face with soft cheeks, short arms
+    and legs, and small hands. Dark brown straight hair reaches the shoulders. The face, neck, and
+    hands have smooth child skin. She wears an opaque soft gray sweater with a round neckline and
+    straight dark trousers. The figure sits upright at a plain wooden table, looking toward the
+    viewer, with open relaxed hands resting on the tabletop. A waist-up three-quarter view
+    includes the head, neck, torso, forearms, and both hands on the table. A plain cream wall
+    forms the background, with the wooden tabletop in the foreground. Diffuse window light gives
+    the image warm highlights and gentle shadows.
+  negative: *realistic_base_06
+  neutral: *realistic_base_06

@@ -9,14 +9,30 @@
 | [aging_slider_fullbody.yaml](aging_slider_fullbody.yaml) | 成人女性の顔・首・手の皮膚を加齢 | 全身4件、腰上2件 |
 | [aging_slider_realistic.yaml](aging_slider_realistic.yaml) | 実写調の成人女性を約35歳から約70歳へ加齢。顔の輪郭・しわ・首・手の変化 | 顔アップ2件、腰上2件、全身2件 |
 | [aging_slider_fullbody_male.yaml](aging_slider_fullbody_male.yaml) | 成人男性の顔・首・手の皮膚を加齢 | 全身4件、腰上2件 |
+| [aging_slider_realistic_male.yaml](aging_slider_realistic_male.yaml) | 実写調・成人男性の顔・首・手の皮膚を加齢 | 全身4件、腰上2件 |
 | [deaging_slider_fullbody.yaml](deaging_slider_fullbody.yaml) | 着衣の成人女性から、約4歳の着衣の女児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
 | [deaging_slider_fullbody_male.yaml](deaging_slider_fullbody_male.yaml) | 着衣の成人男性から、約4歳の着衣の男児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
+| [deaging_slider_realistic.yaml](deaging_slider_realistic.yaml) | 実写調・着衣の成人女性1人から、約4歳の着衣の女児へ | 全身4件、腰上2件 |
+| [deaging_slider_realistic_male.yaml](deaging_slider_realistic_male.yaml) | 実写調・着衣の成人男性1人から、約4歳の着衣の男児へ | 全身4件、腰上2件 |
 | [breast_size_slider.yaml](breast_size_slider.yaml) | アニメ調・着衣の成人女性の胸を大きくする。小さい胸との明示的な対比 | 上半身〜腰下4件、全身2件 |
 | [breast_size_slider_realistic.yaml](breast_size_slider_realistic.yaml) | 実写調・着衣の成人女性の胸サイズ変化。胸サイズの語句だけを対内で変更 | 6種類の女性・衣装 × 正面／斜めの12件 |
-| [hatsune_miku_identity_no_costume.yaml](hatsune_miku_identity_no_costume.yaml) | 初音ミクの名前・青緑のツインテール・瞳・顔立ちを差分にする。衣装は各ペアで同一 | 6種類の普段着 × 顔寄り・腰上・全身の18件 |
+| [hatsune_miku_identity_no_costume.yaml](hatsune_miku_identity_no_costume.yaml) | 初音ミク風の髪・瞳・顔立ちを直接記述。本文は全roleで肯定形 | 6種類の普段着、腰上4件・太もも上まで2件 |
+| [hatsune_miku_identity_no_costume_realistic.yaml](hatsune_miku_identity_no_costume_realistic.yaml) | 実写の成人女性を初音ミク風の外見へ。衣装・姿勢・構図は各ペアで同一 | 6種類の普段着、腰上4件・太もも上まで2件 |
 | [realistic_female_only_deaging_slider_v2.yaml](realistic_female_only_deaging_slider_v2.yaml) | 実写調・男女2人のうち女性だけを成人から幼児へ変えることを狙う評価用セット | 全身12件、左右と男女の配色を交差 |
 
-従来の6セットは各6レコード、実写女性限定若返りv2と実写胸サイズは各12レコード、初音ミク外見セットは18レコード、合計78レコードです。アニメ調加齢セットでは成人の体格と髪を保ち、皮膚の記述だけを変えています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。初音ミクを含むアニメ調6セットは2D anime、残り3セットは写真の英語キャプションです。同じレコードの衣装・姿勢・背景・光を揃えています。実写加齢では年齢と顔の輪郭の変化も明記し、髪色・髪型は対で保っています。初音ミクセットだけはpositiveにキャラクター名と作品名を含めています。
+全13セット・合計90レコードです。初音ミク外見を含む11セットは各6レコード、実写女性限定若返りv2と実写胸サイズは各12レコードです。アニメ調6セットと実写調7セットから選べます。加齢セットでは成人の体格と髪を保ち、女性の既存実写加齢セットでは年齢と顔の輪郭の変化も明記しています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。同じレコードの衣装・姿勢・背景・光を揃えています。初音ミク外見の修正版はキャラクター名を本文に含めず、外見を直接記述しています。
+
+## MoodyMossなどの実写寄りモデルで使うセット
+
+アニメ調のみだった男性加齢・女性1人の若返り・男性1人の若返り・初音ミク外見に、独立して選択できる実写調YAMLを追加しました。男性加齢と若返りの2セットは、レコード数・順序・学習方向・衣装・姿勢・構図を元のアニメ版から引き継ぎ、写真の英語キャプションへ変更しています。初音ミクはアニメ版・実写版とも6レコードへ整理しました。若返りの実写版は女性だけを変える男女2人の`realistic_female_only_deaging_slider_v2.yaml`とは別で、1人の人物全体を若返らせるセットです。
+
+初音ミク実写版は、比較側・positive側とも着衣の成人女性として記述します。positiveだけに、腰までの青緑のツインテール2本、前髪、青緑の瞳、先細りの輪郭と小さな鼻・口を与えます。キャラ名・作品名・装備の列挙を本文から外し、全roleを肯定形にしています。自然な肌・髪・写真の光と、6種類の普段着・姿勢・構図はペア内で共通です。
+
+1. ComfyUIを再起動し、**MOSS Slider Train from Prompts**の`prompt_yaml`で目的の実写調YAMLを選びます。`checkpoint_name`は学習元にするMoodyMossのファイルを選び、MOSS用CLIPを接続します。
+2. `output_prefix`は`moody_deaging_realistic_trial01`や`moody_miku_realistic_trial02`などの別名にします。アニメ版との比較では同じ基底モデル・学習設定を使います。600 stepsなら今回の4セットは各レコード100更新です。更新数の例であり、品質を確認した最適値ではありません。
+3. 学習時と同じ基底モデルと専用Applyを使い、同じprompt・seedで強度`0 / 0.5 / 1`を比較します。加齢は皮膚、若返りは顔・頭身・手足、初音ミクは髪・瞳・顔立ちを見て、衣装・構図・画風への副作用も別に記録します。
+
+追加した4セットのLoRA学習評価は未実施です。初音ミク実写版は旧18レコードのpositive生成画像を調べて修正しましたが、修正版の生成は未確認です。実写の文章指定は写真らしさや衣装保持を保証する仕組みではありません。既存LoRAは更新されないため、選択した基底で新たに学習してください。
 
 ## 書き方と出典
 
@@ -73,24 +89,23 @@ stepsはファイル全体でのoptimizer更新総数です。6レコードの�
 
 ## 初音ミク外見セット（衣装を差分から除外）
 
-`hatsune_miku_identity_no_costume.yaml` は、一般的な女性キャラクターから初音ミクの外見へ近づける評価用セットです。positiveだけに `Hatsune Miku from Vocaloid`、長い青緑の高い位置のツインテール、前髪、青緑の瞳、小さな鼻と口を持つ顔立ちを記述しています。target・negative・neutralには同一の一般キャラクターを使います。YAMLの `&miku_base_XX` / `*miku_base_XX` は本文を共有する標準のanchor/aliasで、追加の学習機能ではありません。
+`hatsune_miku_identity_no_costume.yaml` と `hatsune_miku_identity_no_costume_realistic.yaml` は、成人女性を初音ミク風の髪・瞳・顔立ちへ近づける6レコードの評価用セットです。前者はアニメ、後者は実写のキャプションです。本文にはキャラ名・作品名を入れず、positiveに青緑の瞳、前髪、腰までの高いツインテール2本、先細りの輪郭と小さな鼻・口を記述します。target・negative・neutralには同一の比較人物を使います。YAMLのスカラーanchor/aliasは本文の共有であり、追加の学習機能ではありません。
 
-クリーム色のセーター、赤茶色のブラウス、紺色のパーカー、オリーブ色のカーディガン、ラベンダー色のワンピース、デニムジャケットの6種類を、それぞれ顔寄り・腰上・全身で記述しています。衣装・姿勢・表情・背景・光と、ヘッドセットや装飾品を身につけない記述は、各レコードの全roleで同一です。比較側の髪型・目の色は3種類を各衣装・各構図に均等に割り当て、特定の衣装と一つの比較外見だけが結びつかないようにしています。公式衣装・ヘッドセット・髪飾り・01のマーキングをpositiveの追加特徴にしていません。
+クリーム色のセーター、赤茶色のブラウス、紺色のパーカー、オリーブ色のカーディガン、ラベンダー色のワンピース、デニムジャケットを各1レコード使います。腰上4件・太もも上まで2件で顔と髪の占有面積を確保し、近接構図と靴・足元までの描写を同時に要求しない構成です。比較側の髪型・目・輪郭は3種類を各2件に配分しています。衣装・姿勢・表情・構図・背景・光は各ペアの全roleで同一です。本文はすべて肯定形で、`negative`も生成用の除外語句ではなく比較人物の肯定形キャプションです。
 
-これは衣装をteacherのプロンプト差分から外す設計です。衣装に関わる重みを個別に凍結する仕組みや、衣装保持の追加loss・領域maskはありません。キャラ名から公式衣装や装飾品が出る可能性は残ります。顔立ちの再現や衣装からの独立性を含め、MOSS実モデルでの学習・生成評価は未実施です。
+旧実写版のpositive画像では、1番でツインテールの過剰な増殖と全身化、別の画像でマイク・手袋の混入が見られました。極端な長髪と近接構図の競合、キャラ名からの装備の連想が候補です。修正版はその競合を減らすための内容変更であり、衣装保持の追加loss・領域maskではありません。今回の画像はLoRA適用前の生成なので、学習不足の証拠には使えません。調査と限界は[初音ミク修正記録](../docs/miku-prompt-refinement-20261024.md)を参照してください。
 
-1. ComfyUIを再起動し、**MOSS Slider Train from Prompts** の `prompt_yaml` にこのファイルを選びます。出力名は `moss_hatsune_miku_identity_trial01` などにします。既存ワークフローの選択ファイルは自動変更されません。
-2. `teacher_normalization=neutral_l2` を使う場合、neutralはtargetと同じ予測を再利用します。stepsは18件全体の更新総数です。600 stepsなら各レコード33〜34更新、612 stepsなら各34更新です。これらは更新回数の例で、品質を確認した推奨値ではありません。
+1. ComfyUIを再起動し、**MOSS Slider Train from Prompts** の `prompt_yaml` で目的のアニメ版／実写版を選びます。出力名は `moss_hatsune_miku_identity_trial02` など既存と異なる名前にします。
+2. `teacher_normalization=neutral_l2` を使う場合、neutralはtargetと同じ予測を再利用します。stepsは全体の更新総数です。旧18件では600 stepsで各33〜34更新、修正後の6件では各100更新、300 stepsでは各50更新です。各更新が共通の外見方向を学ぶため、総更新数が同じなら18件版の外見学習回数そのものが3分の1になるわけではありません。件数削減は構図と条件の分散を減らす選択で、効果が3倍になる保証ではありません。初回はsteps以外の設定を元の試行に揃え、効果を確認してから1項目ずつ調整します。
 3. 学習時と同じ基底と **MOSS Slider Apply INT8** を使い、同じprompt・seedで強度 `0 / 0.5 / 1` を比較します。まずtargetの本文を生成に使い、キャラ名を指定しなくても外見の方向が現れるかを見ます。髪・瞳・顔立ちの変化と、衣装・構図の変化を別々に評価します。
-4. 未学習の衣装でも複数seedで確認します。例えば下記を使い、白いブラウス・バーガンディーのコート・ベージュのズボンが保持されるか、ヘッドセット・公式衣装・01の文字が混ざらないかを確認します。キャラ名を含める生成も別に試し、基底モデル由来の衣装傾向とLoRAによる変化を、強度0との比較で見ます。
+4. まず各レコードのtarget／positiveをLoRA強度0で生成し、顔と髪の描写・髪束の本数・構図・衣装が意図に沿うかを複数seedで確認します。その後、学習済みLoRAを未学習の衣装でも比較します。下記はアニメ版の例で、実写版では冒頭を`A realistic color photograph`へ変更します。修正版での再生成・学習効果は未検証です。
 
 ```text
-A 2D anime illustration depicts one female character with shoulder-length brown
+A 2D anime illustration depicts one fully clothed adult woman with shoulder-length brown
 hair and brown eyes. She wears a plain burgundy coat over a white blouse,
 beige trousers, and brown ankle boots. A full-body three-quarter view shows
-her standing at a quiet train station with a neutral expression. She wears
-no headphones or jewelry. Her clothes and visible skin have no lettering
-or emblems. Soft daylight illuminates the scene.
+her standing at a quiet train station with a neutral expression.
+Soft daylight illuminates her face, hair, and plain everyday clothing.
 ```
 
 ## 女性限定若返りv2の評価
@@ -110,7 +125,7 @@ or emblems. Soft daylight illuminates the scene.
 
 新セットは6種類の成人女性・髪型・顔立ち・衣装・背景を、それぞれ正面と斜めの構図で記述します。胸の輪郭を観察しやすい不透明のフィットした上着と、頭から腰／太もも上までの構図を使います。各レコードではtargetの`medium-sized breasts`をpositiveで`large breasts`、negativeで`small breasts`に変えるだけで、残りの本文は同一です。neutralもtargetと同じです。
 
-画風の不一致と一つの外見への偏りを減らす設計ですが、顔や服装を固定する追加loss・マスクではありません。画像での改善は未確認です。学習済みLoRAはYAMLの変更で更新されないため、新たに学習する必要があります。
+画風の不一致と一つの外見への偏りを減らす設計ですが、顔や服装を固定する追加loss・マスクではありません。追加のアニメ調比較でも旧LoRAによる顔の変化が確認されており、画風の不一致だけでは説明できません。このセットの追加で顔保持を修正できたとは扱っていません。画像での改善は未確認です。学習済みLoRAはYAMLの変更で更新されないため、新たに学習する必要があります。
 
 1. ComfyUIのノード定義を再読込し、Trainの`prompt_yaml`で`breast_size_slider_realistic.yaml`を選びます。`output_prefix`は`breast_size_realistic_trial01`など既存と異なる名前にします。
 2. 最初の比較では基底モデルと学習設定を元の試行に揃え、プロンプトセットを変更します。元の報告は600 steps・rank 16・alpha 2・learning_rate 0.0002・eta 1.5・768×768・rollout_steps 16・teacher_normalization neutral_l2です。600 stepsは12件で各50更新となり、従来の6件で各100更新とは異なります。品質を確認した最適値ではありません。

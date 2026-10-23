@@ -1,0 +1,129 @@
+# Compact Hatsune Miku appearance direction: teal twin ponytails, teal eyes, and facial features.
+# Six records: six everyday outfits, four waist-up portraits, and two upper-thigh portraits.
+# Captions use affirmative descriptions throughout, including the negative comparison role.
+# Character appearance is described directly; character names and equipment lists stay in comments.
+# target == negative == neutral through scalar YAML aliases; neutral is the L2 reference.
+# At 600 total optimizer steps each record is selected 100 times; quality requires separate evaluation.
+# Revised from supplied positive-caption renders; revised renders and LoRA training are pending.
+
+
+# 01
+- target: &miku_photo_01 >-
+    A realistic color photograph shows one fully clothed adult woman. She has an oval face, brown
+    eyes, and straight brown hair reaching her shoulders. She wears a plain cream crew-neck
+    sweater. A front portrait frames her from the top of her head to her waist. She stands
+    upright, facing the viewer with a relaxed, neutral expression. A pale gray studio wall forms
+    the background. Soft, even studio light illuminates her face and clothing. Natural skin
+    texture and individual hair strands are visible.
+  positive: >-
+    A realistic color photograph shows one fully clothed adult woman. She has teal eyes and a
+    softly tapered face with a small nose and mouth. Her teal hair forms two high ponytails ending
+    at her waist, one on each side of her head, with straight eyebrow-length bangs. She wears a
+    plain cream crew-neck sweater. A front portrait frames her from the top of her head to her
+    waist. She stands upright, facing the viewer with a relaxed, neutral expression. A pale gray
+    studio wall forms the background. Soft, even studio light illuminates her face and clothing.
+    Natural skin texture and individual hair strands are visible.
+  negative: *miku_photo_01
+  neutral: *miku_photo_01
+
+# 02
+- target: &miku_photo_02 >-
+    A realistic color photograph shows one fully clothed adult woman. She has a gently angular
+    face, dark brown eyes, and a short black bob haircut. She wears a plain rust-colored
+    long-sleeved blouse. A three-quarter portrait frames her from the top of her head to her
+    waist. She stands at a gentle three-quarter angle with her face turned toward the viewer and a
+    relaxed, neutral expression. A softly blurred beige room forms the background. Diffuse window
+    light illuminates her face and clothing. Natural skin texture and individual hair strands are
+    visible.
+  positive: >-
+    A realistic color photograph shows one fully clothed adult woman. She has teal eyes and a
+    softly tapered face with a small nose and mouth. Her teal hair forms two high ponytails ending
+    at her waist, one on each side of her head, with straight eyebrow-length bangs. She wears a
+    plain rust-colored long-sleeved blouse. A three-quarter portrait frames her from the top of
+    her head to her waist. She stands at a gentle three-quarter angle with her face turned toward
+    the viewer and a relaxed, neutral expression. A softly blurred beige room forms the
+    background. Diffuse window light illuminates her face and clothing. Natural skin texture and
+    individual hair strands are visible.
+  negative: *miku_photo_02
+  neutral: *miku_photo_02
+
+# 03
+- target: &miku_photo_03 >-
+    A realistic color photograph shows one fully clothed adult woman. She has a softly rounded
+    face, hazel eyes, and long blonde hair in a single braid. She wears a plain navy hooded
+    sweatshirt. A front portrait frames her from the top of her head to her waist. She stands
+    upright, facing the viewer with a relaxed, neutral expression. Softly blurred green foliage
+    forms the background. Gentle daylight illuminates her face and clothing. Natural skin texture
+    and individual hair strands are visible.
+  positive: >-
+    A realistic color photograph shows one fully clothed adult woman. She has teal eyes and a
+    softly tapered face with a small nose and mouth. Her teal hair forms two high ponytails ending
+    at her waist, one on each side of her head, with straight eyebrow-length bangs. She wears a
+    plain navy hooded sweatshirt. A front portrait frames her from the top of her head to her
+    waist. She stands upright, facing the viewer with a relaxed, neutral expression. Softly
+    blurred green foliage forms the background. Gentle daylight illuminates her face and clothing.
+    Natural skin texture and individual hair strands are visible.
+  negative: *miku_photo_03
+  neutral: *miku_photo_03
+
+# 04
+- target: &miku_photo_04 >-
+    A realistic color photograph shows one fully clothed adult woman. She has a gently angular
+    face, dark brown eyes, and a short black bob haircut. She wears a plain olive cardigan over a
+    white T-shirt and a taupe skirt. A front portrait frames her from the top of her head to her
+    upper thighs. She stands upright, facing the viewer with a relaxed, neutral expression. A pale
+    gray studio wall forms the background. Soft, even studio light illuminates her face and
+    clothing. Natural skin texture and individual hair strands are visible.
+  positive: >-
+    A realistic color photograph shows one fully clothed adult woman. She has teal eyes and a
+    softly tapered face with a small nose and mouth. Her teal hair forms two high ponytails ending
+    at her waist, one on each side of her head, with straight eyebrow-length bangs. She wears a
+    plain olive cardigan over a white T-shirt and a taupe skirt. A front portrait frames her from
+    the top of her head to her upper thighs. She stands upright, facing the viewer with a relaxed,
+    neutral expression. A pale gray studio wall forms the background. Soft, even studio light
+    illuminates her face and clothing. Natural skin texture and individual hair strands are
+    visible.
+  negative: *miku_photo_04
+  neutral: *miku_photo_04
+
+# 05
+- target: &miku_photo_05 >-
+    A realistic color photograph shows one fully clothed adult woman. She has a softly rounded
+    face, hazel eyes, and long blonde hair in a single braid. She wears a plain lavender dress
+    with short sleeves. A three-quarter portrait frames her from the top of her head to her waist.
+    She stands at a gentle three-quarter angle with her face turned toward the viewer and a
+    relaxed, neutral expression. A softly blurred beige room forms the background. Diffuse window
+    light illuminates her face and clothing. Natural skin texture and individual hair strands are
+    visible.
+  positive: >-
+    A realistic color photograph shows one fully clothed adult woman. She has teal eyes and a
+    softly tapered face with a small nose and mouth. Her teal hair forms two high ponytails ending
+    at her waist, one on each side of her head, with straight eyebrow-length bangs. She wears a
+    plain lavender dress with short sleeves. A three-quarter portrait frames her from the top of
+    her head to her waist. She stands at a gentle three-quarter angle with her face turned toward
+    the viewer and a relaxed, neutral expression. A softly blurred beige room forms the
+    background. Diffuse window light illuminates her face and clothing. Natural skin texture and
+    individual hair strands are visible.
+  negative: *miku_photo_05
+  neutral: *miku_photo_05
+
+# 06
+- target: &miku_photo_06 >-
+    A realistic color photograph shows one fully clothed adult woman. She has an oval face, brown
+    eyes, and straight brown hair reaching her shoulders. She wears a plain blue denim jacket over
+    a white T-shirt and black trousers. A three-quarter portrait frames her from the top of her
+    head to her upper thighs. She stands at a gentle three-quarter angle with her face turned
+    toward the viewer and a relaxed, neutral expression. Softly blurred green foliage forms the
+    background. Gentle daylight illuminates her face and clothing. Natural skin texture and
+    individual hair strands are visible.
+  positive: >-
+    A realistic color photograph shows one fully clothed adult woman. She has teal eyes and a
+    softly tapered face with a small nose and mouth. Her teal hair forms two high ponytails ending
+    at her waist, one on each side of her head, with straight eyebrow-length bangs. She wears a
+    plain blue denim jacket over a white T-shirt and black trousers. A three-quarter portrait
+    frames her from the top of her head to her upper thighs. She stands at a gentle three-quarter
+    angle with her face turned toward the viewer and a relaxed, neutral expression. Softly blurred
+    green foliage forms the background. Gentle daylight illuminates her face and clothing. Natural
+    skin texture and individual hair strands are visible.
+  negative: *miku_photo_06
+  neutral: *miku_photo_06

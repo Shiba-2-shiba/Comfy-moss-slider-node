@@ -1,385 +1,125 @@
-# Hatsune Miku identity direction; outfit-independent intent, not a guarantee.
-# 18 records: six everyday outfits crossed with three framing choices.
-# Each pair changes only character identity, hair, eyes, and facial appearance.
-# Clothing, pose, framing, background, lighting, and accessory exclusions match exactly.
-# negative == neutral == target via YAML aliases; neutral is only an L2 reference.
-# Official costume, headphones, decorative hair ornaments, and 01 markings are not targets.
-# MOSS image quality and costume leakage have not been evaluated.
+# Compact Hatsune Miku appearance direction: teal twin ponytails, teal eyes, and facial features.
+# Six records: six everyday outfits, four waist-up portraits, and two upper-thigh portraits.
+# Captions use affirmative descriptions throughout, including the negative comparison role.
+# Character appearance is described directly; character names and equipment lists stay in comments.
+# target == negative == neutral through scalar YAML aliases; neutral is the L2 reference.
+# At 600 total optimizer steps each record is selected 100 times; quality requires separate evaluation.
+# Revised from supplied positive-caption renders; revised renders and LoRA training are pending.
 
-# 01: head-and-shoulders; outfit 1.
-- target: &miku_base_01 >-
-    A 2D anime illustration depicts one female character with straight shoulder-length brown hair
-    and brown eyes. She wears a plain cream crew-neck sweater, straight navy trousers, and brown
-    loafers. A head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral
-    expression. Only her head, neck, shoulders, and the top of her clothing are inside the frame.
-    She wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing
-    and visible skin have no lettering or emblems. A pale gray studio wall forms the background.
-    Soft, even studio light reveals her face, hair, and clothing in natural colors.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain cream crew-neck sweater, straight navy trousers, and brown loafers. A
-    head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral expression. Only
-    her head, neck, shoulders, and the top of her clothing are inside the frame. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A pale gray studio wall forms the background. Soft, even
-    studio light reveals her face, hair, and clothing in natural colors.
-  negative: *miku_base_01
-  neutral: *miku_base_01
 
-# 02: head-and-shoulders; outfit 2.
-- target: &miku_base_02 >-
-    A 2D anime illustration depicts one female character with a short black bob haircut and dark
-    brown eyes. She wears a plain rust-colored long-sleeved blouse, charcoal trousers, and dark
-    brown ankle boots. A head-and-shoulders portrait shows her facing the viewer with a relaxed,
-    neutral expression. Only her head, neck, shoulders, and the top of her clothing are inside the
-    frame. She wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her
-    clothing and visible skin have no lettering or emblems. A softly blurred beige room forms the
-    background. Broad window light creates gentle shadows on her face, hair, and clothing.
+# 01
+- target: &miku_anime_01 >-
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has an oval face, brown eyes, and straight brown hair reaching her shoulders. She
+    wears a plain cream crew-neck sweater. A front portrait frames her from the top of her head to
+    her waist. She stands upright, facing the viewer with a relaxed, neutral expression. A pale
+    gray studio wall forms the background. Soft, even studio light illuminates her face and
+    clothing.
   positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain rust-colored long-sleeved blouse, charcoal trousers, and dark brown ankle
-    boots. A head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral
-    expression. Only her head, neck, shoulders, and the top of her clothing are inside the frame.
-    She wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing
-    and visible skin have no lettering or emblems. A softly blurred beige room forms the background.
-    Broad window light creates gentle shadows on her face, hair, and clothing.
-  negative: *miku_base_02
-  neutral: *miku_base_02
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has teal eyes and a softly tapered face with a small nose and mouth. Her teal hair
+    forms two high ponytails ending at her waist, one on each side of her head, with straight
+    eyebrow-length bangs. She wears a plain cream crew-neck sweater. A front portrait frames her
+    from the top of her head to her waist. She stands upright, facing the viewer with a relaxed,
+    neutral expression. A pale gray studio wall forms the background. Soft, even studio light
+    illuminates her face and clothing.
+  negative: *miku_anime_01
+  neutral: *miku_anime_01
 
-# 03: head-and-shoulders; outfit 3.
-- target: &miku_base_03 >-
-    A 2D anime illustration depicts one female character with long blonde hair in a single braid and
-    hazel eyes. She wears a plain navy hooded sweatshirt, blue jeans, and white sneakers. A
-    head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral expression. Only
-    her head, neck, shoulders, and the top of her clothing are inside the frame. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A quiet park path with softly blurred green foliage forms the
-    background. Diffuse daylight evenly illuminates her face, hair, and clothing.
+# 02
+- target: &miku_anime_02 >-
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has a gently angular face, dark brown eyes, and a short black bob haircut. She
+    wears a plain rust-colored long-sleeved blouse. A three-quarter portrait frames her from the
+    top of her head to her waist. She stands at a gentle three-quarter angle with her face turned
+    toward the viewer and a relaxed, neutral expression. A softly blurred beige room forms the
+    background. Diffuse window light illuminates her face and clothing.
   positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain navy hooded sweatshirt, blue jeans, and white sneakers. A head-and-shoulders
-    portrait shows her facing the viewer with a relaxed, neutral expression. Only her head, neck,
-    shoulders, and the top of her clothing are inside the frame. She wears no headphones, headset
-    microphone, decorative hair ornaments, or jewelry. Her clothing and visible skin have no
-    lettering or emblems. A quiet park path with softly blurred green foliage forms the background.
-    Diffuse daylight evenly illuminates her face, hair, and clothing.
-  negative: *miku_base_03
-  neutral: *miku_base_03
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has teal eyes and a softly tapered face with a small nose and mouth. Her teal hair
+    forms two high ponytails ending at her waist, one on each side of her head, with straight
+    eyebrow-length bangs. She wears a plain rust-colored long-sleeved blouse. A three-quarter
+    portrait frames her from the top of her head to her waist. She stands at a gentle
+    three-quarter angle with her face turned toward the viewer and a relaxed, neutral expression.
+    A softly blurred beige room forms the background. Diffuse window light illuminates her face
+    and clothing.
+  negative: *miku_anime_02
+  neutral: *miku_anime_02
 
-# 04: head-and-shoulders; outfit 4.
-- target: &miku_base_04 >-
-    A 2D anime illustration depicts one female character with straight shoulder-length brown hair
-    and brown eyes. She wears a plain olive cardigan over a white T-shirt, a taupe midi skirt, and
-    brown flat shoes. A head-and-shoulders portrait shows her facing the viewer with a relaxed,
-    neutral expression. Only her head, neck, shoulders, and the top of her clothing are inside the
-    frame. She wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her
-    clothing and visible skin have no lettering or emblems. A pale gray studio wall forms the
-    background. Soft, even studio light reveals her face, hair, and clothing in natural colors.
+# 03
+- target: &miku_anime_03 >-
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has a softly rounded face, hazel eyes, and long blonde hair in a single braid. She
+    wears a plain navy hooded sweatshirt. A front portrait frames her from the top of her head to
+    her waist. She stands upright, facing the viewer with a relaxed, neutral expression. Softly
+    blurred green foliage forms the background. Gentle daylight illuminates her face and clothing.
   positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain olive cardigan over a white T-shirt, a taupe midi skirt, and brown flat shoes.
-    A head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral expression.
-    Only her head, neck, shoulders, and the top of her clothing are inside the frame. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A pale gray studio wall forms the background. Soft, even
-    studio light reveals her face, hair, and clothing in natural colors.
-  negative: *miku_base_04
-  neutral: *miku_base_04
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has teal eyes and a softly tapered face with a small nose and mouth. Her teal hair
+    forms two high ponytails ending at her waist, one on each side of her head, with straight
+    eyebrow-length bangs. She wears a plain navy hooded sweatshirt. A front portrait frames her
+    from the top of her head to her waist. She stands upright, facing the viewer with a relaxed,
+    neutral expression. Softly blurred green foliage forms the background. Gentle daylight
+    illuminates her face and clothing.
+  negative: *miku_anime_03
+  neutral: *miku_anime_03
 
-# 05: head-and-shoulders; outfit 5.
-- target: &miku_base_05 >-
-    A 2D anime illustration depicts one female character with a short black bob haircut and dark
-    brown eyes. She wears a plain lavender knee-length dress with short sleeves and white sneakers.
-    A head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral expression.
-    Only her head, neck, shoulders, and the top of her clothing are inside the frame. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A softly blurred beige room forms the background. Broad
-    window light creates gentle shadows on her face, hair, and clothing.
+# 04
+- target: &miku_anime_04 >-
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has a gently angular face, dark brown eyes, and a short black bob haircut. She
+    wears a plain olive cardigan over a white T-shirt and a taupe skirt. A front portrait frames
+    her from the top of her head to her upper thighs. She stands upright, facing the viewer with a
+    relaxed, neutral expression. A pale gray studio wall forms the background. Soft, even studio
+    light illuminates her face and clothing.
   positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain lavender knee-length dress with short sleeves and white sneakers. A
-    head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral expression. Only
-    her head, neck, shoulders, and the top of her clothing are inside the frame. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A softly blurred beige room forms the background. Broad
-    window light creates gentle shadows on her face, hair, and clothing.
-  negative: *miku_base_05
-  neutral: *miku_base_05
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has teal eyes and a softly tapered face with a small nose and mouth. Her teal hair
+    forms two high ponytails ending at her waist, one on each side of her head, with straight
+    eyebrow-length bangs. She wears a plain olive cardigan over a white T-shirt and a taupe skirt.
+    A front portrait frames her from the top of her head to her upper thighs. She stands upright,
+    facing the viewer with a relaxed, neutral expression. A pale gray studio wall forms the
+    background. Soft, even studio light illuminates her face and clothing.
+  negative: *miku_anime_04
+  neutral: *miku_anime_04
 
-# 06: head-and-shoulders; outfit 6.
-- target: &miku_base_06 >-
-    A 2D anime illustration depicts one female character with long blonde hair in a single braid and
-    hazel eyes. She wears a plain blue denim jacket over a white T-shirt, black trousers, and gray
-    sneakers. A head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral
-    expression. Only her head, neck, shoulders, and the top of her clothing are inside the frame.
-    She wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing
-    and visible skin have no lettering or emblems. A quiet park path with softly blurred green
-    foliage forms the background. Diffuse daylight evenly illuminates her face, hair, and clothing.
+# 05
+- target: &miku_anime_05 >-
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has a softly rounded face, hazel eyes, and long blonde hair in a single braid. She
+    wears a plain lavender dress with short sleeves. A three-quarter portrait frames her from the
+    top of her head to her waist. She stands at a gentle three-quarter angle with her face turned
+    toward the viewer and a relaxed, neutral expression. A softly blurred beige room forms the
+    background. Diffuse window light illuminates her face and clothing.
   positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain blue denim jacket over a white T-shirt, black trousers, and gray sneakers. A
-    head-and-shoulders portrait shows her facing the viewer with a relaxed, neutral expression. Only
-    her head, neck, shoulders, and the top of her clothing are inside the frame. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A quiet park path with softly blurred green foliage forms the
-    background. Diffuse daylight evenly illuminates her face, hair, and clothing.
-  negative: *miku_base_06
-  neutral: *miku_base_06
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has teal eyes and a softly tapered face with a small nose and mouth. Her teal hair
+    forms two high ponytails ending at her waist, one on each side of her head, with straight
+    eyebrow-length bangs. She wears a plain lavender dress with short sleeves. A three-quarter
+    portrait frames her from the top of her head to her waist. She stands at a gentle
+    three-quarter angle with her face turned toward the viewer and a relaxed, neutral expression.
+    A softly blurred beige room forms the background. Diffuse window light illuminates her face
+    and clothing.
+  negative: *miku_anime_05
+  neutral: *miku_anime_05
 
-# 07: waist-up; outfit 1.
-- target: &miku_base_07 >-
-    A 2D anime illustration depicts one female character with a short black bob haircut and dark
-    brown eyes. She wears a plain cream crew-neck sweater, straight navy trousers, and brown
-    loafers. A waist-up three-quarter portrait shows her standing upright with a gentle smile. Both
-    hands rest separately at her waist, with relaxed fingers. She wears no headphones, headset
-    microphone, decorative hair ornaments, or jewelry. Her clothing and visible skin have no
-    lettering or emblems. A softly blurred beige room forms the background. Broad window light
-    creates gentle shadows on her face, hair, and clothing.
+# 06
+- target: &miku_anime_06 >-
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has an oval face, brown eyes, and straight brown hair reaching her shoulders. She
+    wears a plain blue denim jacket over a white T-shirt and black trousers. A three-quarter
+    portrait frames her from the top of her head to her upper thighs. She stands at a gentle
+    three-quarter angle with her face turned toward the viewer and a relaxed, neutral expression.
+    Softly blurred green foliage forms the background. Gentle daylight illuminates her face and
+    clothing.
   positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain cream crew-neck sweater, straight navy trousers, and brown loafers. A waist-up
-    three-quarter portrait shows her standing upright with a gentle smile. Both hands rest
-    separately at her waist, with relaxed fingers. She wears no headphones, headset microphone,
-    decorative hair ornaments, or jewelry. Her clothing and visible skin have no lettering or
-    emblems. A softly blurred beige room forms the background. Broad window light creates gentle
-    shadows on her face, hair, and clothing.
-  negative: *miku_base_07
-  neutral: *miku_base_07
-
-# 08: waist-up; outfit 2.
-- target: &miku_base_08 >-
-    A 2D anime illustration depicts one female character with long blonde hair in a single braid and
-    hazel eyes. She wears a plain rust-colored long-sleeved blouse, charcoal trousers, and dark
-    brown ankle boots. A waist-up three-quarter portrait shows her standing upright with a gentle
-    smile. Both hands rest separately at her waist, with relaxed fingers. She wears no headphones,
-    headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible skin have no
-    lettering or emblems. A quiet park path with softly blurred green foliage forms the background.
-    Diffuse daylight evenly illuminates her face, hair, and clothing.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain rust-colored long-sleeved blouse, charcoal trousers, and dark brown ankle
-    boots. A waist-up three-quarter portrait shows her standing upright with a gentle smile. Both
-    hands rest separately at her waist, with relaxed fingers. She wears no headphones, headset
-    microphone, decorative hair ornaments, or jewelry. Her clothing and visible skin have no
-    lettering or emblems. A quiet park path with softly blurred green foliage forms the background.
-    Diffuse daylight evenly illuminates her face, hair, and clothing.
-  negative: *miku_base_08
-  neutral: *miku_base_08
-
-# 09: waist-up; outfit 3.
-- target: &miku_base_09 >-
-    A 2D anime illustration depicts one female character with straight shoulder-length brown hair
-    and brown eyes. She wears a plain navy hooded sweatshirt, blue jeans, and white sneakers. A
-    waist-up three-quarter portrait shows her standing upright with a gentle smile. Both hands rest
-    separately at her waist, with relaxed fingers. She wears no headphones, headset microphone,
-    decorative hair ornaments, or jewelry. Her clothing and visible skin have no lettering or
-    emblems. A pale gray studio wall forms the background. Soft, even studio light reveals her face,
-    hair, and clothing in natural colors.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain navy hooded sweatshirt, blue jeans, and white sneakers. A waist-up
-    three-quarter portrait shows her standing upright with a gentle smile. Both hands rest
-    separately at her waist, with relaxed fingers. She wears no headphones, headset microphone,
-    decorative hair ornaments, or jewelry. Her clothing and visible skin have no lettering or
-    emblems. A pale gray studio wall forms the background. Soft, even studio light reveals her face,
-    hair, and clothing in natural colors.
-  negative: *miku_base_09
-  neutral: *miku_base_09
-
-# 10: waist-up; outfit 4.
-- target: &miku_base_10 >-
-    A 2D anime illustration depicts one female character with a short black bob haircut and dark
-    brown eyes. She wears a plain olive cardigan over a white T-shirt, a taupe midi skirt, and brown
-    flat shoes. A waist-up three-quarter portrait shows her standing upright with a gentle smile.
-    Both hands rest separately at her waist, with relaxed fingers. She wears no headphones, headset
-    microphone, decorative hair ornaments, or jewelry. Her clothing and visible skin have no
-    lettering or emblems. A softly blurred beige room forms the background. Broad window light
-    creates gentle shadows on her face, hair, and clothing.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain olive cardigan over a white T-shirt, a taupe midi skirt, and brown flat shoes.
-    A waist-up three-quarter portrait shows her standing upright with a gentle smile. Both hands
-    rest separately at her waist, with relaxed fingers. She wears no headphones, headset microphone,
-    decorative hair ornaments, or jewelry. Her clothing and visible skin have no lettering or
-    emblems. A softly blurred beige room forms the background. Broad window light creates gentle
-    shadows on her face, hair, and clothing.
-  negative: *miku_base_10
-  neutral: *miku_base_10
-
-# 11: waist-up; outfit 5.
-- target: &miku_base_11 >-
-    A 2D anime illustration depicts one female character with long blonde hair in a single braid and
-    hazel eyes. She wears a plain lavender knee-length dress with short sleeves and white sneakers.
-    A waist-up three-quarter portrait shows her standing upright with a gentle smile. Both hands
-    rest separately at her waist, with relaxed fingers. She wears no headphones, headset microphone,
-    decorative hair ornaments, or jewelry. Her clothing and visible skin have no lettering or
-    emblems. A quiet park path with softly blurred green foliage forms the background. Diffuse
-    daylight evenly illuminates her face, hair, and clothing.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain lavender knee-length dress with short sleeves and white sneakers. A waist-up
-    three-quarter portrait shows her standing upright with a gentle smile. Both hands rest
-    separately at her waist, with relaxed fingers. She wears no headphones, headset microphone,
-    decorative hair ornaments, or jewelry. Her clothing and visible skin have no lettering or
-    emblems. A quiet park path with softly blurred green foliage forms the background. Diffuse
-    daylight evenly illuminates her face, hair, and clothing.
-  negative: *miku_base_11
-  neutral: *miku_base_11
-
-# 12: waist-up; outfit 6.
-- target: &miku_base_12 >-
-    A 2D anime illustration depicts one female character with straight shoulder-length brown hair
-    and brown eyes. She wears a plain blue denim jacket over a white T-shirt, black trousers, and
-    gray sneakers. A waist-up three-quarter portrait shows her standing upright with a gentle smile.
-    Both hands rest separately at her waist, with relaxed fingers. She wears no headphones, headset
-    microphone, decorative hair ornaments, or jewelry. Her clothing and visible skin have no
-    lettering or emblems. A pale gray studio wall forms the background. Soft, even studio light
-    reveals her face, hair, and clothing in natural colors.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain blue denim jacket over a white T-shirt, black trousers, and gray sneakers. A
-    waist-up three-quarter portrait shows her standing upright with a gentle smile. Both hands rest
-    separately at her waist, with relaxed fingers. She wears no headphones, headset microphone,
-    decorative hair ornaments, or jewelry. Her clothing and visible skin have no lettering or
-    emblems. A pale gray studio wall forms the background. Soft, even studio light reveals her face,
-    hair, and clothing in natural colors.
-  negative: *miku_base_12
-  neutral: *miku_base_12
-
-# 13: full-body; outfit 1.
-- target: &miku_base_13 >-
-    A 2D anime illustration depicts one female character with long blonde hair in a single braid and
-    hazel eyes. She wears a plain cream crew-neck sweater, straight navy trousers, and brown
-    loafers. A full-body front view shows her entire standing figure from the top of her hair to
-    both shoes and the floor. She has a calm, neutral expression and relaxed arms at her sides. She
-    wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and
-    visible skin have no lettering or emblems. A quiet park path with softly blurred green foliage
-    forms the background. Diffuse daylight evenly illuminates her face, hair, and clothing.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain cream crew-neck sweater, straight navy trousers, and brown loafers. A
-    full-body front view shows her entire standing figure from the top of her hair to both shoes and
-    the floor. She has a calm, neutral expression and relaxed arms at her sides. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A quiet park path with softly blurred green foliage forms the
-    background. Diffuse daylight evenly illuminates her face, hair, and clothing.
-  negative: *miku_base_13
-  neutral: *miku_base_13
-
-# 14: full-body; outfit 2.
-- target: &miku_base_14 >-
-    A 2D anime illustration depicts one female character with straight shoulder-length brown hair
-    and brown eyes. She wears a plain rust-colored long-sleeved blouse, charcoal trousers, and dark
-    brown ankle boots. A full-body front view shows her entire standing figure from the top of her
-    hair to both shoes and the floor. She has a calm, neutral expression and relaxed arms at her
-    sides. She wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her
-    clothing and visible skin have no lettering or emblems. A pale gray studio wall forms the
-    background. Soft, even studio light reveals her face, hair, and clothing in natural colors.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain rust-colored long-sleeved blouse, charcoal trousers, and dark brown ankle
-    boots. A full-body front view shows her entire standing figure from the top of her hair to both
-    shoes and the floor. She has a calm, neutral expression and relaxed arms at her sides. She wears
-    no headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and
-    visible skin have no lettering or emblems. A pale gray studio wall forms the background. Soft,
-    even studio light reveals her face, hair, and clothing in natural colors.
-  negative: *miku_base_14
-  neutral: *miku_base_14
-
-# 15: full-body; outfit 3.
-- target: &miku_base_15 >-
-    A 2D anime illustration depicts one female character with a short black bob haircut and dark
-    brown eyes. She wears a plain navy hooded sweatshirt, blue jeans, and white sneakers. A
-    full-body front view shows her entire standing figure from the top of her hair to both shoes and
-    the floor. She has a calm, neutral expression and relaxed arms at her sides. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A softly blurred beige room forms the background. Broad
-    window light creates gentle shadows on her face, hair, and clothing.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain navy hooded sweatshirt, blue jeans, and white sneakers. A full-body front view
-    shows her entire standing figure from the top of her hair to both shoes and the floor. She has a
-    calm, neutral expression and relaxed arms at her sides. She wears no headphones, headset
-    microphone, decorative hair ornaments, or jewelry. Her clothing and visible skin have no
-    lettering or emblems. A softly blurred beige room forms the background. Broad window light
-    creates gentle shadows on her face, hair, and clothing.
-  negative: *miku_base_15
-  neutral: *miku_base_15
-
-# 16: full-body; outfit 4.
-- target: &miku_base_16 >-
-    A 2D anime illustration depicts one female character with long blonde hair in a single braid and
-    hazel eyes. She wears a plain olive cardigan over a white T-shirt, a taupe midi skirt, and brown
-    flat shoes. A full-body front view shows her entire standing figure from the top of her hair to
-    both shoes and the floor. She has a calm, neutral expression and relaxed arms at her sides. She
-    wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and
-    visible skin have no lettering or emblems. A quiet park path with softly blurred green foliage
-    forms the background. Diffuse daylight evenly illuminates her face, hair, and clothing.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain olive cardigan over a white T-shirt, a taupe midi skirt, and brown flat shoes.
-    A full-body front view shows her entire standing figure from the top of her hair to both shoes
-    and the floor. She has a calm, neutral expression and relaxed arms at her sides. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A quiet park path with softly blurred green foliage forms the
-    background. Diffuse daylight evenly illuminates her face, hair, and clothing.
-  negative: *miku_base_16
-  neutral: *miku_base_16
-
-# 17: full-body; outfit 5.
-- target: &miku_base_17 >-
-    A 2D anime illustration depicts one female character with straight shoulder-length brown hair
-    and brown eyes. She wears a plain lavender knee-length dress with short sleeves and white
-    sneakers. A full-body front view shows her entire standing figure from the top of her hair to
-    both shoes and the floor. She has a calm, neutral expression and relaxed arms at her sides. She
-    wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and
-    visible skin have no lettering or emblems. A pale gray studio wall forms the background. Soft,
-    even studio light reveals her face, hair, and clothing in natural colors.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain lavender knee-length dress with short sleeves and white sneakers. A full-body
-    front view shows her entire standing figure from the top of her hair to both shoes and the
-    floor. She has a calm, neutral expression and relaxed arms at her sides. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A pale gray studio wall forms the background. Soft, even
-    studio light reveals her face, hair, and clothing in natural colors.
-  negative: *miku_base_17
-  neutral: *miku_base_17
-
-# 18: full-body; outfit 6.
-- target: &miku_base_18 >-
-    A 2D anime illustration depicts one female character with a short black bob haircut and dark
-    brown eyes. She wears a plain blue denim jacket over a white T-shirt, black trousers, and gray
-    sneakers. A full-body front view shows her entire standing figure from the top of her hair to
-    both shoes and the floor. She has a calm, neutral expression and relaxed arms at her sides. She
-    wears no headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and
-    visible skin have no lettering or emblems. A softly blurred beige room forms the background.
-    Broad window light creates gentle shadows on her face, hair, and clothing.
-  positive: >-
-    A 2D anime illustration depicts Hatsune Miku from Vocaloid, with very long teal hair in high
-    twin-tails, straight bangs, teal eyes, and a softly tapered face with a small nose and mouth.
-    She wears a plain blue denim jacket over a white T-shirt, black trousers, and gray sneakers. A
-    full-body front view shows her entire standing figure from the top of her hair to both shoes and
-    the floor. She has a calm, neutral expression and relaxed arms at her sides. She wears no
-    headphones, headset microphone, decorative hair ornaments, or jewelry. Her clothing and visible
-    skin have no lettering or emblems. A softly blurred beige room forms the background. Broad
-    window light creates gentle shadows on her face, hair, and clothing.
-  negative: *miku_base_18
-  neutral: *miku_base_18
+    A 2D anime illustration with clean outlines and soft cel shading shows one fully clothed adult
+    woman. She has teal eyes and a softly tapered face with a small nose and mouth. Her teal hair
+    forms two high ponytails ending at her waist, one on each side of her head, with straight
+    eyebrow-length bangs. She wears a plain blue denim jacket over a white T-shirt and black
+    trousers. A three-quarter portrait frames her from the top of her head to her upper thighs.
+    She stands at a gentle three-quarter angle with her face turned toward the viewer and a
+    relaxed, neutral expression. Softly blurred green foliage forms the background. Gentle
+    daylight illuminates her face and clothing.
+  negative: *miku_anime_06
+  neutral: *miku_anime_06

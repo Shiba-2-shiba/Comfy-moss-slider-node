@@ -93,21 +93,27 @@ INT8の基底モデルを凍結したまま、FP32のLoRAパラメーターだ�
 
 初回はrank 2・小解像度・1 stepで、学習から保存・適用まで動くことを確認してから設定を増やしてください。同梱ワークフローの600 stepsは動作確認用の最小設定ではありません。
 
-[prompts/](prompts/)には9セット・合計78レコードを同梱しています。従来の6セットは各6レコード、実写調の女性限定若返りv2と実写胸サイズは各12レコード、初音ミクの外見セットは18レコードです。
+[prompts/](prompts/)には13セット・合計90レコードを同梱しています。初音ミク外見を含む11セットは各6レコード、実写調の女性限定若返りv2と実写胸サイズは各12レコードです。
 
 | セット | 内容 |
 |---|---|
 | `aging_slider_fullbody.yaml` | アニメ調・成人女性の皮膚の加齢 |
 | `aging_slider_fullbody_male.yaml` | アニメ調・成人男性の皮膚の加齢 |
 | `aging_slider_realistic.yaml` | 実写調・成人女性の加齢 |
+| `aging_slider_realistic_male.yaml` | 実写調・成人男性の皮膚の加齢（6レコード、実画像未検証） |
 | `deaging_slider_fullbody.yaml` | アニメ調・着衣の成人女性から幼児への年齢・体格変化 |
 | `deaging_slider_fullbody_male.yaml` | アニメ調・着衣の成人男性から幼児への年齢・体格変化 |
+| `deaging_slider_realistic.yaml` | 実写調・着衣の成人女性1人から幼児への年齢・体格変化（6レコード、実画像未検証） |
+| `deaging_slider_realistic_male.yaml` | 実写調・着衣の成人男性1人から幼児への年齢・体格変化（6レコード、実画像未検証） |
 | `breast_size_slider.yaml` | アニメ調・着衣の成人女性の胸サイズ変化 |
 | `breast_size_slider_realistic.yaml` | 実写調・着衣の成人女性の胸サイズ変化。顔・髪・衣装を変えた12レコード（実画像未検証） |
-| `hatsune_miku_identity_no_costume.yaml` | 初音ミクの髪・瞳・顔立ちへ近づける評価用セット。6種類の普段着を対内で固定し、公式衣装を学習差分から除外（18レコード、MOSS実画像未検証） |
+| `hatsune_miku_identity_no_costume.yaml` | 初音ミク風の髪・瞳・顔立ちを直接記述。6種類の普段着、腰上中心、肯定形の6レコード（修正版の生成・学習効果は未検証） |
+| `hatsune_miku_identity_no_costume_realistic.yaml` | 実写の成人女性を初音ミク風の外見へ。キャラ名や装備の列挙を使わず、普段着を対内で固定（6レコード、修正版の生成・学習効果は未検証） |
 | `realistic_female_only_deaging_slider_v2.yaml` | 実写調・男女2人の全身構図で、女性だけを成人から幼児へ変えることを狙う評価用セット（12レコード、MOSS実画像未検証） |
 
 実写で胸サイズを評価する場合は`breast_size_slider_realistic.yaml`を選び、新しい出力名で再学習してください。既存の`breast_size_slider.yaml`はアニメ調です。詳しくは[実写胸サイズの評価](prompts/README.md#実写胸サイズの評価)を参照してください。
+
+MoodyMossなどの実写寄りモデルでは、加齢・若返り・初音ミク外見にも実写調のセットを選べます。[実写調セットの選び方](prompts/README.md#moodymossなどの実写寄りモデルで使うセット)を参照してください。
 
 `steps`はファイル全体でのoptimizer更新総数です。1更新につき1レコードを順番に使うため、6レコードで600 stepsなら各レコードを100回、12レコードなら各50回使います。新しい実写調セットの[試し方と評価項目](prompts/README.md#女性限定若返りv2の評価)も参照してください。
 
