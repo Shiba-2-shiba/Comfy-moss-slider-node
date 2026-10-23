@@ -11,11 +11,12 @@
 | [aging_slider_fullbody_male.yaml](aging_slider_fullbody_male.yaml) | 成人男性の顔・首・手の皮膚を加齢 | 全身4件、腰上2件 |
 | [deaging_slider_fullbody.yaml](deaging_slider_fullbody.yaml) | 着衣の成人女性から、約4歳の着衣の女児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
 | [deaging_slider_fullbody_male.yaml](deaging_slider_fullbody_male.yaml) | 着衣の成人男性から、約4歳の着衣の男児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
-| [breast_size_slider.yaml](breast_size_slider.yaml) | 着衣の成人女性の胸を大きくする。小さい胸との明示的な対比 | 上半身〜腰下4件、全身2件 |
+| [breast_size_slider.yaml](breast_size_slider.yaml) | アニメ調・着衣の成人女性の胸を大きくする。小さい胸との明示的な対比 | 上半身〜腰下4件、全身2件 |
+| [breast_size_slider_realistic.yaml](breast_size_slider_realistic.yaml) | 実写調・着衣の成人女性の胸サイズ変化。胸サイズの語句だけを対内で変更 | 6種類の女性・衣装 × 正面／斜めの12件 |
 | [hatsune_miku_identity_no_costume.yaml](hatsune_miku_identity_no_costume.yaml) | 初音ミクの名前・青緑のツインテール・瞳・顔立ちを差分にする。衣装は各ペアで同一 | 6種類の普段着 × 顔寄り・腰上・全身の18件 |
 | [realistic_female_only_deaging_slider_v2.yaml](realistic_female_only_deaging_slider_v2.yaml) | 実写調・男女2人のうち女性だけを成人から幼児へ変えることを狙う評価用セット | 全身12件、左右と男女の配色を交差 |
 
-従来の6セットは各6レコード、実写女性限定若返りv2は12レコード、初音ミク外見セットは18レコード、合計66レコードです。アニメ調加齢セットでは成人の体格と髪を保ち、皮膚の記述だけを変えています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。初音ミクを含むアニメ調6セットは2D anime、残り2セットは写真の英語キャプションです。同じレコードの衣装・姿勢・背景・光を揃えています。実写加齢では年齢と顔の輪郭の変化も明記し、髪色・髪型は対で保っています。初音ミクセットだけはpositiveにキャラクター名と作品名を含めています。
+従来の6セットは各6レコード、実写女性限定若返りv2と実写胸サイズは各12レコード、初音ミク外見セットは18レコード、合計78レコードです。アニメ調加齢セットでは成人の体格と髪を保ち、皮膚の記述だけを変えています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。初音ミクを含むアニメ調6セットは2D anime、残り3セットは写真の英語キャプションです。同じレコードの衣装・姿勢・背景・光を揃えています。実写加齢では年齢と顔の輪郭の変化も明記し、髪色・髪型は対で保っています。初音ミクセットだけはpositiveにキャラクター名と作品名を含めています。
 
 ## 書き方と出典
 
@@ -102,3 +103,18 @@ or emblems. Soft daylight illuminates the scene.
 4. 学習レコードのtargetに加え、未学習の服色・背景、左右を入れ替えた構図、女性1人、男性1人でも確認します。女性の顔と全身の幼児化、男性の年齢・身長・体格、服色・着衣状態、人数・左右・全身の収まり、写真らしさを分けて記録します。
 
 女性の変化が複数seedで再現し、男性と構図の変化が許容範囲なら採用候補とします。男性まで若返る場合は性別分離、色や左右で効き方が変わる場合は配色・配置への依存を優先して見直します。顔だけ変わって体格が残る場合は全身比率の対比を調整します。強度2だけで崩れる場合は低強度での実用性を先に判断します。次の試行では本文か学習設定の一方だけを変え、別名で保存します。
+
+## 実写胸サイズの評価
+
+`breast_size_slider_realistic.yaml`は、アニメ調の胸サイズセットで学習したLoRAを実写に適用すると、胸の変化より先に顔や髪が変わるという報告を受けて追加した実写専用の候補です。既存の`breast_size_slider.yaml`はアニメ調の用途に残しています。
+
+新セットは6種類の成人女性・髪型・顔立ち・衣装・背景を、それぞれ正面と斜めの構図で記述します。胸の輪郭を観察しやすい不透明のフィットした上着と、頭から腰／太もも上までの構図を使います。各レコードではtargetの`medium-sized breasts`をpositiveで`large breasts`、negativeで`small breasts`に変えるだけで、残りの本文は同一です。neutralもtargetと同じです。
+
+画風の不一致と一つの外見への偏りを減らす設計ですが、顔や服装を固定する追加loss・マスクではありません。画像での改善は未確認です。学習済みLoRAはYAMLの変更で更新されないため、新たに学習する必要があります。
+
+1. ComfyUIのノード定義を再読込し、Trainの`prompt_yaml`で`breast_size_slider_realistic.yaml`を選びます。`output_prefix`は`breast_size_realistic_trial01`など既存と異なる名前にします。
+2. 最初の比較では基底モデルと学習設定を元の試行に揃え、プロンプトセットを変更します。元の報告は600 steps・rank 16・alpha 2・learning_rate 0.0002・eta 1.5・768×768・rollout_steps 16・teacher_normalization neutral_l2です。600 stepsは12件で各50更新となり、従来の6件で各100更新とは異なります。品質を確認した最適値ではありません。
+3. 学習時と同じ基底と専用Applyを使い、同一prompt・seed・生成設定で強度`0 / 0.25 / 0.5 / 0.75 / 1`を比較します。[positive prompt例](breast_size_slider_realistic_eval.txt)は成人女性1人のみを記述しています。最初は元画像と同じseed・sampler・CFG・SLGを保ち、その後に複数seedへ広げます。
+4. 胸の輪郭の変化と、顔・髪・肩幅・胴回り・衣装・構図の変化を分けて評価します。顔だけを描く対照でも副作用を確認します。低強度から副作用が先行する場合、強度を上げ続けず、学習方法の追加検討に進みます。
+
+元画像・学習manifestの調査範囲と仮説は[調査記録](../docs/breast-size-realistic-20261023.md)を参照してください。

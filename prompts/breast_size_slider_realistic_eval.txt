@@ -1,0 +1,22 @@
+実写胸サイズLoRA・比較用positive prompts
+
+成人女性1人のみ。各項目の英文をpositive欄に貼り付けて使用してください。
+同一prompt・seed・基底・生成設定で旧LoRA／新LoRAをそれぞれ強度0 / 0.25 / 0.5 / 0.75 / 1で比較します。
+胸サイズの変化と、顔・髪・肩幅・胴回り・衣装・構図の変化を別々に記録します。05は胸サイズを評価せず顔への影響を調べる対照です。
+まず提供画像と同じseed 333599710072681、25 steps、CFG 2.5、er_sde、simple、SLG layer 22（0〜0.5）で比較し、その後に複数seedで再現性を確認します。
+生成結果は未検証です。
+
+01 元画像と同じ成人女性・机に両手（再現比較）
+A realistic color photograph depicts one fully clothed adult woman with shoulder-length dark brown hair. She wears a plain ivory short-sleeved blouse and dark trousers. She sits upright at a wooden table, facing the camera with a neutral expression. Both hands rest separately on the tabletop, with the backs of her hands and fingers clearly visible. A waist-up composition includes her head, neck, torso, forearms, and both hands. A softly lit beige wall forms the background. Gentle window light reveals natural skin texture and realistic fabric detail.
+
+02 胸の輪郭が見える斜め構図・成人女性
+A photorealistic color studio photograph depicts exactly one fully clothed adult woman in her thirties with shoulder-length dark brown hair and brown eyes. She wears an opaque fitted ivory short-sleeved blouse and dark trousers. She stands in a three-quarter view with her face turned toward the camera and her arms relaxed beside her hips, leaving the front and sides of her blouse unobstructed. A composition from the top of her head to her upper thighs includes her face, neck, torso, and both hands. A plain warm beige wall forms the background. Soft window light reveals natural skin texture, the silhouette of the blouse, and realistic fabric folds.
+
+03 未学習衣装・屋外の成人女性
+A photorealistic color photograph depicts exactly one fully clothed adult woman in her thirties with short wavy dark brown hair. She wears an opaque fitted pale green short-sleeved polo shirt and straight black trousers. She stands alone on an empty garden path, facing the camera with a neutral expression and her arms relaxed at her sides. A view from the top of her head to her upper thighs includes both hands and her unobstructed torso. A simple stone wall and green shrubs form the background. Soft overcast daylight reveals natural skin texture and realistic fabric folds.
+
+04 全身への汎化・成人女性
+A realistic color studio photograph depicts exactly one fully clothed adult woman in her thirties with shoulder-length black hair. She wears an opaque fitted muted blue short-sleeved crew-neck top, beige trousers, and brown flat shoes. She stands alone facing the camera with a neutral expression and her arms relaxed slightly away from her torso. Both hands are visible. A centered full-body composition includes her entire figure, both shoes, the floor, and ample headroom. A plain pale gray wall forms the background. Soft, even lighting reveals natural skin texture and realistic clothing detail.
+
+05 顔だけの対照・成人女性
+A photorealistic studio photograph depicts exactly one fully clothed adult woman in her thirties with shoulder-length dark brown hair and brown eyes. She wears a plain ivory crew-neck blouse. A close-up portrait includes only her entire head, neck, shoulders, and the upper edge of her blouse. She looks directly at the camera with a neutral expression. A plain warm beige wall forms the background. Soft, even studio lighting reveals natural skin texture and facial contours.

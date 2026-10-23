@@ -1,0 +1,364 @@
+# Photographic breast-size slider, intended for realistic MOSS derivatives.
+# 12 records: six varied adult women/outfits, each in front and three-quarter views.
+# Positive/negative change only breast size; target and neutral share the medium-size reference.
+# Opaque fitted tops and torso-focused framing make the intended silhouette visible.
+# This is a prompt-only candidate, not a face-preservation loss or region mask.
+# Requires new training; visual improvement is not yet validated.
+
+# 01
+- target: &breast_realistic_01 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has a short
+    black bob, dark brown eyes, and an oval face. She has medium-sized breasts. She wears an opaque
+    fitted burgundy short-sleeved collared blouse and charcoal trousers. She stands with her arms
+    relaxed at her sides, leaving the front and sides of her blouse unobstructed. She looks toward the
+    camera with a neutral expression. A front view frames her from the top of her head to her hips. Her
+    entire face, neck, shoulders, torso, and both hands are clearly visible. A plain pale gray studio
+    wall forms the background. Soft, even studio lighting reveals natural skin texture and realistic
+    fabric folds.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has a short
+    black bob, dark brown eyes, and an oval face. She has large breasts. She wears an opaque fitted
+    burgundy short-sleeved collared blouse and charcoal trousers. She stands with her arms relaxed at
+    her sides, leaving the front and sides of her blouse unobstructed. She looks toward the camera with
+    a neutral expression. A front view frames her from the top of her head to her hips. Her entire face,
+    neck, shoulders, torso, and both hands are clearly visible. A plain pale gray studio wall forms the
+    background. Soft, even studio lighting reveals natural skin texture and realistic fabric folds.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has a short
+    black bob, dark brown eyes, and an oval face. She has small breasts. She wears an opaque fitted
+    burgundy short-sleeved collared blouse and charcoal trousers. She stands with her arms relaxed at
+    her sides, leaving the front and sides of her blouse unobstructed. She looks toward the camera with
+    a neutral expression. A front view frames her from the top of her head to her hips. Her entire face,
+    neck, shoulders, torso, and both hands are clearly visible. A plain pale gray studio wall forms the
+    background. Soft, even studio lighting reveals natural skin texture and realistic fabric folds.
+  neutral: *breast_realistic_01
+
+# 02
+- target: &breast_realistic_02 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has a short
+    black bob, dark brown eyes, and an oval face. She has medium-sized breasts. She wears an opaque
+    fitted burgundy short-sleeved collared blouse and charcoal trousers. She stands with her arms
+    relaxed at her sides, leaving the front and sides of her blouse unobstructed. She looks toward the
+    camera with a neutral expression. A three-quarter view frames her from the top of her head to her
+    upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain
+    pale gray studio wall forms the background. Soft, even studio lighting reveals natural skin texture
+    and realistic fabric folds.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has a short
+    black bob, dark brown eyes, and an oval face. She has large breasts. She wears an opaque fitted
+    burgundy short-sleeved collared blouse and charcoal trousers. She stands with her arms relaxed at
+    her sides, leaving the front and sides of her blouse unobstructed. She looks toward the camera with
+    a neutral expression. A three-quarter view frames her from the top of her head to her upper thighs.
+    Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain pale gray
+    studio wall forms the background. Soft, even studio lighting reveals natural skin texture and
+    realistic fabric folds.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has a short
+    black bob, dark brown eyes, and an oval face. She has small breasts. She wears an opaque fitted
+    burgundy short-sleeved collared blouse and charcoal trousers. She stands with her arms relaxed at
+    her sides, leaving the front and sides of her blouse unobstructed. She looks toward the camera with
+    a neutral expression. A three-quarter view frames her from the top of her head to her upper thighs.
+    Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain pale gray
+    studio wall forms the background. Soft, even studio lighting reveals natural skin texture and
+    realistic fabric folds.
+  neutral: *breast_realistic_02
+
+# 03
+- target: &breast_realistic_03 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has wavy
+    chestnut shoulder-length hair, brown eyes, and a softly rounded face. She has medium-sized breasts.
+    She wears an opaque fitted ivory short-sleeved crew-neck top and navy trousers. She stands with her
+    hands resting separately beside her hips, leaving her torso unobstructed. She looks toward the
+    camera with a neutral expression. A front view frames her from the top of her head to her hips. Her
+    entire face, neck, shoulders, torso, and both hands are clearly visible. A simple beige wall and a
+    wooden chair form the background. Diffuse window light reveals natural skin texture and realistic
+    fabric folds.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has wavy
+    chestnut shoulder-length hair, brown eyes, and a softly rounded face. She has large breasts. She
+    wears an opaque fitted ivory short-sleeved crew-neck top and navy trousers. She stands with her
+    hands resting separately beside her hips, leaving her torso unobstructed. She looks toward the
+    camera with a neutral expression. A front view frames her from the top of her head to her hips. Her
+    entire face, neck, shoulders, torso, and both hands are clearly visible. A simple beige wall and a
+    wooden chair form the background. Diffuse window light reveals natural skin texture and realistic
+    fabric folds.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has wavy
+    chestnut shoulder-length hair, brown eyes, and a softly rounded face. She has small breasts. She
+    wears an opaque fitted ivory short-sleeved crew-neck top and navy trousers. She stands with her
+    hands resting separately beside her hips, leaving her torso unobstructed. She looks toward the
+    camera with a neutral expression. A front view frames her from the top of her head to her hips. Her
+    entire face, neck, shoulders, torso, and both hands are clearly visible. A simple beige wall and a
+    wooden chair form the background. Diffuse window light reveals natural skin texture and realistic
+    fabric folds.
+  neutral: *breast_realistic_03
+
+# 04
+- target: &breast_realistic_04 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has wavy
+    chestnut shoulder-length hair, brown eyes, and a softly rounded face. She has medium-sized breasts.
+    She wears an opaque fitted ivory short-sleeved crew-neck top and navy trousers. She stands with her
+    hands resting separately beside her hips, leaving her torso unobstructed. She looks toward the
+    camera with a neutral expression. A three-quarter view frames her from the top of her head to her
+    upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A simple
+    beige wall and a wooden chair form the background. Diffuse window light reveals natural skin texture
+    and realistic fabric folds.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has wavy
+    chestnut shoulder-length hair, brown eyes, and a softly rounded face. She has large breasts. She
+    wears an opaque fitted ivory short-sleeved crew-neck top and navy trousers. She stands with her
+    hands resting separately beside her hips, leaving her torso unobstructed. She looks toward the
+    camera with a neutral expression. A three-quarter view frames her from the top of her head to her
+    upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A simple
+    beige wall and a wooden chair form the background. Diffuse window light reveals natural skin texture
+    and realistic fabric folds.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has wavy
+    chestnut shoulder-length hair, brown eyes, and a softly rounded face. She has small breasts. She
+    wears an opaque fitted ivory short-sleeved crew-neck top and navy trousers. She stands with her
+    hands resting separately beside her hips, leaving her torso unobstructed. She looks toward the
+    camera with a neutral expression. A three-quarter view frames her from the top of her head to her
+    upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A simple
+    beige wall and a wooden chair form the background. Diffuse window light reveals natural skin texture
+    and realistic fabric folds.
+  neutral: *breast_realistic_04
+
+# 05
+- target: &breast_realistic_05 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has short
+    blonde hair, blue eyes, and a gently angular face. She has medium-sized breasts. She wears an opaque
+    fitted slate-blue short-sleeved button-front shirt and dark gray trousers. She sits upright on a
+    plain stool with both hands resting separately on her thighs, leaving her shirt unobstructed. She
+    looks toward the camera with a neutral expression. A front view frames her from the top of her head
+    to her hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain
+    cream studio wall forms the background. Soft neutral studio lighting reveals natural skin texture
+    and realistic fabric detail.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has short
+    blonde hair, blue eyes, and a gently angular face. She has large breasts. She wears an opaque fitted
+    slate-blue short-sleeved button-front shirt and dark gray trousers. She sits upright on a plain
+    stool with both hands resting separately on her thighs, leaving her shirt unobstructed. She looks
+    toward the camera with a neutral expression. A front view frames her from the top of her head to her
+    hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain cream
+    studio wall forms the background. Soft neutral studio lighting reveals natural skin texture and
+    realistic fabric detail.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has short
+    blonde hair, blue eyes, and a gently angular face. She has small breasts. She wears an opaque fitted
+    slate-blue short-sleeved button-front shirt and dark gray trousers. She sits upright on a plain
+    stool with both hands resting separately on her thighs, leaving her shirt unobstructed. She looks
+    toward the camera with a neutral expression. A front view frames her from the top of her head to her
+    hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain cream
+    studio wall forms the background. Soft neutral studio lighting reveals natural skin texture and
+    realistic fabric detail.
+  neutral: *breast_realistic_05
+
+# 06
+- target: &breast_realistic_06 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has short
+    blonde hair, blue eyes, and a gently angular face. She has medium-sized breasts. She wears an opaque
+    fitted slate-blue short-sleeved button-front shirt and dark gray trousers. She sits upright on a
+    plain stool with both hands resting separately on her thighs, leaving her shirt unobstructed. She
+    looks toward the camera with a neutral expression. A three-quarter view frames her from the top of
+    her head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A plain cream studio wall forms the background. Soft neutral studio lighting reveals
+    natural skin texture and realistic fabric detail.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has short
+    blonde hair, blue eyes, and a gently angular face. She has large breasts. She wears an opaque fitted
+    slate-blue short-sleeved button-front shirt and dark gray trousers. She sits upright on a plain
+    stool with both hands resting separately on her thighs, leaving her shirt unobstructed. She looks
+    toward the camera with a neutral expression. A three-quarter view frames her from the top of her
+    head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A plain cream studio wall forms the background. Soft neutral studio lighting reveals
+    natural skin texture and realistic fabric detail.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has short
+    blonde hair, blue eyes, and a gently angular face. She has small breasts. She wears an opaque fitted
+    slate-blue short-sleeved button-front shirt and dark gray trousers. She sits upright on a plain
+    stool with both hands resting separately on her thighs, leaving her shirt unobstructed. She looks
+    toward the camera with a neutral expression. A three-quarter view frames her from the top of her
+    head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A plain cream studio wall forms the background. Soft neutral studio lighting reveals
+    natural skin texture and realistic fabric detail.
+  neutral: *breast_realistic_06
+
+# 07
+- target: &breast_realistic_07 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has dark brown
+    skin, brown eyes, and black hair gathered into a low ponytail. She has medium-sized breasts. She
+    wears an opaque fitted olive-green short-sleeved crew-neck top and beige trousers. She stands
+    upright with her arms slightly separated from her torso and both hands relaxed beside her hips. She
+    looks toward the camera with a neutral expression. A front view frames her from the top of her head
+    to her hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain
+    warm gray studio wall forms the background. Broad, soft daylight reveals natural skin texture and
+    realistic fabric folds.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has dark brown
+    skin, brown eyes, and black hair gathered into a low ponytail. She has large breasts. She wears an
+    opaque fitted olive-green short-sleeved crew-neck top and beige trousers. She stands upright with
+    her arms slightly separated from her torso and both hands relaxed beside her hips. She looks toward
+    the camera with a neutral expression. A front view frames her from the top of her head to her hips.
+    Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain warm gray
+    studio wall forms the background. Broad, soft daylight reveals natural skin texture and realistic
+    fabric folds.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has dark brown
+    skin, brown eyes, and black hair gathered into a low ponytail. She has small breasts. She wears an
+    opaque fitted olive-green short-sleeved crew-neck top and beige trousers. She stands upright with
+    her arms slightly separated from her torso and both hands relaxed beside her hips. She looks toward
+    the camera with a neutral expression. A front view frames her from the top of her head to her hips.
+    Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain warm gray
+    studio wall forms the background. Broad, soft daylight reveals natural skin texture and realistic
+    fabric folds.
+  neutral: *breast_realistic_07
+
+# 08
+- target: &breast_realistic_08 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has dark brown
+    skin, brown eyes, and black hair gathered into a low ponytail. She has medium-sized breasts. She
+    wears an opaque fitted olive-green short-sleeved crew-neck top and beige trousers. She stands
+    upright with her arms slightly separated from her torso and both hands relaxed beside her hips. She
+    looks toward the camera with a neutral expression. A three-quarter view frames her from the top of
+    her head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A plain warm gray studio wall forms the background. Broad, soft daylight reveals natural
+    skin texture and realistic fabric folds.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has dark brown
+    skin, brown eyes, and black hair gathered into a low ponytail. She has large breasts. She wears an
+    opaque fitted olive-green short-sleeved crew-neck top and beige trousers. She stands upright with
+    her arms slightly separated from her torso and both hands relaxed beside her hips. She looks toward
+    the camera with a neutral expression. A three-quarter view frames her from the top of her head to
+    her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A
+    plain warm gray studio wall forms the background. Broad, soft daylight reveals natural skin texture
+    and realistic fabric folds.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has dark brown
+    skin, brown eyes, and black hair gathered into a low ponytail. She has small breasts. She wears an
+    opaque fitted olive-green short-sleeved crew-neck top and beige trousers. She stands upright with
+    her arms slightly separated from her torso and both hands relaxed beside her hips. She looks toward
+    the camera with a neutral expression. A three-quarter view frames her from the top of her head to
+    her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A
+    plain warm gray studio wall forms the background. Broad, soft daylight reveals natural skin texture
+    and realistic fabric folds.
+  neutral: *breast_realistic_08
+
+# 09
+- target: &breast_realistic_09 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has curly
+    auburn shoulder-length hair, hazel eyes, and a square face. She has medium-sized breasts. She wears
+    an opaque fitted muted plum short-sleeved blouse and dark navy trousers. She sits upright on a
+    simple wooden chair with her hands resting separately on her knees, leaving her blouse unobstructed.
+    She looks toward the camera with a neutral expression. A front view frames her from the top of her
+    head to her hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A
+    pale blue wall forms the simple background. Soft, even studio lighting reveals natural skin texture
+    and realistic fabric folds.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has curly
+    auburn shoulder-length hair, hazel eyes, and a square face. She has large breasts. She wears an
+    opaque fitted muted plum short-sleeved blouse and dark navy trousers. She sits upright on a simple
+    wooden chair with her hands resting separately on her knees, leaving her blouse unobstructed. She
+    looks toward the camera with a neutral expression. A front view frames her from the top of her head
+    to her hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A pale
+    blue wall forms the simple background. Soft, even studio lighting reveals natural skin texture and
+    realistic fabric folds.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has curly
+    auburn shoulder-length hair, hazel eyes, and a square face. She has small breasts. She wears an
+    opaque fitted muted plum short-sleeved blouse and dark navy trousers. She sits upright on a simple
+    wooden chair with her hands resting separately on her knees, leaving her blouse unobstructed. She
+    looks toward the camera with a neutral expression. A front view frames her from the top of her head
+    to her hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A pale
+    blue wall forms the simple background. Soft, even studio lighting reveals natural skin texture and
+    realistic fabric folds.
+  neutral: *breast_realistic_09
+
+# 10
+- target: &breast_realistic_10 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has curly
+    auburn shoulder-length hair, hazel eyes, and a square face. She has medium-sized breasts. She wears
+    an opaque fitted muted plum short-sleeved blouse and dark navy trousers. She sits upright on a
+    simple wooden chair with her hands resting separately on her knees, leaving her blouse unobstructed.
+    She looks toward the camera with a neutral expression. A three-quarter view frames her from the top
+    of her head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A pale blue wall forms the simple background. Soft, even studio lighting reveals natural
+    skin texture and realistic fabric folds.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has curly
+    auburn shoulder-length hair, hazel eyes, and a square face. She has large breasts. She wears an
+    opaque fitted muted plum short-sleeved blouse and dark navy trousers. She sits upright on a simple
+    wooden chair with her hands resting separately on her knees, leaving her blouse unobstructed. She
+    looks toward the camera with a neutral expression. A three-quarter view frames her from the top of
+    her head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A pale blue wall forms the simple background. Soft, even studio lighting reveals natural
+    skin texture and realistic fabric folds.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has curly
+    auburn shoulder-length hair, hazel eyes, and a square face. She has small breasts. She wears an
+    opaque fitted muted plum short-sleeved blouse and dark navy trousers. She sits upright on a simple
+    wooden chair with her hands resting separately on her knees, leaving her blouse unobstructed. She
+    looks toward the camera with a neutral expression. A three-quarter view frames her from the top of
+    her head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A pale blue wall forms the simple background. Soft, even studio lighting reveals natural
+    skin texture and realistic fabric folds.
+  neutral: *breast_realistic_10
+
+# 11
+- target: &breast_realistic_11 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has straight
+    dark brown shoulder-length hair, brown eyes, and a long oval face. She has medium-sized breasts. She
+    wears an opaque fitted muted orange short-sleeved crew-neck top and dark denim trousers. She stands
+    with a relaxed posture and both hands hanging naturally at her sides, leaving her torso
+    unobstructed. She looks toward the camera with a neutral expression. A front view frames her from
+    the top of her head to her hips. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A plain off-white studio wall forms the background. Gentle window light reveals natural
+    skin texture and realistic fabric detail.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has straight
+    dark brown shoulder-length hair, brown eyes, and a long oval face. She has large breasts. She wears
+    an opaque fitted muted orange short-sleeved crew-neck top and dark denim trousers. She stands with a
+    relaxed posture and both hands hanging naturally at her sides, leaving her torso unobstructed. She
+    looks toward the camera with a neutral expression. A front view frames her from the top of her head
+    to her hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain
+    off-white studio wall forms the background. Gentle window light reveals natural skin texture and
+    realistic fabric detail.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has straight
+    dark brown shoulder-length hair, brown eyes, and a long oval face. She has small breasts. She wears
+    an opaque fitted muted orange short-sleeved crew-neck top and dark denim trousers. She stands with a
+    relaxed posture and both hands hanging naturally at her sides, leaving her torso unobstructed. She
+    looks toward the camera with a neutral expression. A front view frames her from the top of her head
+    to her hips. Her entire face, neck, shoulders, torso, and both hands are clearly visible. A plain
+    off-white studio wall forms the background. Gentle window light reveals natural skin texture and
+    realistic fabric detail.
+  neutral: *breast_realistic_11
+
+# 12
+- target: &breast_realistic_12 >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has straight
+    dark brown shoulder-length hair, brown eyes, and a long oval face. She has medium-sized breasts. She
+    wears an opaque fitted muted orange short-sleeved crew-neck top and dark denim trousers. She stands
+    with a relaxed posture and both hands hanging naturally at her sides, leaving her torso
+    unobstructed. She looks toward the camera with a neutral expression. A three-quarter view frames her
+    from the top of her head to her upper thighs. Her entire face, neck, shoulders, torso, and both
+    hands are clearly visible. A plain off-white studio wall forms the background. Gentle window light
+    reveals natural skin texture and realistic fabric detail.
+  positive: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has straight
+    dark brown shoulder-length hair, brown eyes, and a long oval face. She has large breasts. She wears
+    an opaque fitted muted orange short-sleeved crew-neck top and dark denim trousers. She stands with a
+    relaxed posture and both hands hanging naturally at her sides, leaving her torso unobstructed. She
+    looks toward the camera with a neutral expression. A three-quarter view frames her from the top of
+    her head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A plain off-white studio wall forms the background. Gentle window light reveals natural
+    skin texture and realistic fabric detail.
+  negative: >-
+    A photorealistic color photograph depicts exactly one fully clothed adult woman. She has straight
+    dark brown shoulder-length hair, brown eyes, and a long oval face. She has small breasts. She wears
+    an opaque fitted muted orange short-sleeved crew-neck top and dark denim trousers. She stands with a
+    relaxed posture and both hands hanging naturally at her sides, leaving her torso unobstructed. She
+    looks toward the camera with a neutral expression. A three-quarter view frames her from the top of
+    her head to her upper thighs. Her entire face, neck, shoulders, torso, and both hands are clearly
+    visible. A plain off-white studio wall forms the background. Gentle window light reveals natural
+    skin texture and realistic fabric detail.
+  neutral: *breast_realistic_12
