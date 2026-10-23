@@ -76,10 +76,19 @@ def test_packaged_presets_are_loadable_training_records():
 
     directory = Path(__file__).resolve().parents[2] / "prompts"
     names = list_prompt_files(directory)
-    assert len(names) == 6
+    expected_counts = {
+        "aging_slider_fullbody.yaml": 6,
+        "aging_slider_fullbody_male.yaml": 6,
+        "aging_slider_realistic.yaml": 6,
+        "breast_size_slider.yaml": 6,
+        "deaging_slider_fullbody.yaml": 6,
+        "deaging_slider_fullbody_male.yaml": 6,
+        "realistic_female_only_deaging_slider_v2.yaml": 12,
+    }
+    assert set(names) == set(expected_counts)
     for name in names:
         snapshot = load_prompt_file(directory, name)
-        assert len(snapshot.records) == 6
+        assert len(snapshot.records) == expected_counts[name]
         assert all(set(record) == {"target", "positive", "negative", "neutral"} for record in snapshot.records)
         assert all(record["neutral"] == record["target"] for record in snapshot.records)
 

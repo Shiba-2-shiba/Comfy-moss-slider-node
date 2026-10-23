@@ -9,3 +9,5 @@ MOSS-Image by OpenMOSS, commit `c1355e6b1986dfe8fba3c0455783a05899212342`, suppl
 The native MOSS model, ComfyUI APIs, LoRA mapping and bypass implementation are imported from the user's ComfyUI installation. Development reference: ComfyUI `8f04fd6ecf4a548937971e840af2a985529fab76`, licensed under GPL-3.0; its license is retained in `licenses/ComfyUI-GPL-3.0.txt`. No ComfyUI model source is vendored into this package.
 
 The slider objective follows the Concept Sliders approach (Gandikota et al., ECCV 2024), adapted to MOSS raw flow velocity. No model weights or third-party datasets are bundled.
+
+`prompts/realistic_female_only_deaging_slider_v2.yaml` ports all 12 caption records, unchanged and in order, from the user's local `Confyui-krea2-slider-node/prompts/realistic_female_only_deaging_slider_v2.yaml` (source file SHA256: `86dc5b179bd8608bfb7669de9a089c6fdeaf432fa5ce3a8db999461b2647ec99`). The header is adapted for MOSS node settings; no Krea2 training configuration, model weights, or image validation is carried over.

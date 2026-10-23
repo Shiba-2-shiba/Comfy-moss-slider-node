@@ -12,12 +12,13 @@
 | [deaging_slider_fullbody.yaml](deaging_slider_fullbody.yaml) | 着衣の成人女性から、約4歳の着衣の女児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
 | [deaging_slider_fullbody_male.yaml](deaging_slider_fullbody_male.yaml) | 着衣の成人男性から、約4歳の着衣の男児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
 | [breast_size_slider.yaml](breast_size_slider.yaml) | 着衣の成人女性の胸を大きくする。小さい胸との明示的な対比 | 上半身〜腰下4件、全身2件 |
+| [realistic_female_only_deaging_slider_v2.yaml](realistic_female_only_deaging_slider_v2.yaml) | 実写調・男女2人のうち女性だけを成人から幼児へ変えることを狙う評価用セット | 全身12件、左右と男女の配色を交差 |
 
-各ファイル6レコード、合計36レコードです。アニメ調加齢セットでは成人の体格と髪を保ち、皮膚の記述だけを変えています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。アニメ調5セットは2D anime、aging_slider_realistic.yamlは写真の英語キャプションです。同じレコードの衣装・姿勢・背景・光を揃えています。実写加齢では年齢と顔の輪郭の変化も明記し、髪色・髪型は対で保っています。モデル固有のトリガー語は含めていません。
+従来の6セットは各6レコード、新しい実写女性限定若返りv2は12レコード、合計48レコードです。アニメ調加齢セットでは成人の体格と髪を保ち、皮膚の記述だけを変えています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。アニメ調5セットは2D anime、残り2セットは写真の英語キャプションです。同じレコードの衣装・姿勢・背景・光を揃えています。実写加齢では年齢と顔の輪郭の変化も明記し、髪色・髪型は対で保っています。モデル固有のトリガー語は含めていません。
 
 ## 書き方と出典
 
-Krea2 Sliderのプロンプトセットにある学習方向と、複数の構図で対を作る方式を参考に、本文をMOSS向けに新規記述しました。参照元は[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)を参照してください。Krea2の学習設定やanchor機能を移植したものではありません。
+従来の6セットはKrea2 Sliderの学習方向と、複数の構図で対を作る方式を参考に、本文をMOSS向けに新規記述しました。実写女性限定若返りv2は、モデル差を評価する最初の比較用として、元のKrea2用YAMLの全12レコードの本文と順序を維持しています。MOSS向けにヘッダーの設定説明を変更しました。参照元は[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)を参照してください。Krea2の学習設定やanchor機能を移植したものではありません。
 
 完成画像に見える人物・外見・服・構図・背景・色・光・画風を自然な英語で記述しています。本文へsystem指示、チャット特殊トークン、品質スコアの羅列を追加しません。MOSS用のテンプレートはnative CLIPが付与します。
 
@@ -56,7 +57,7 @@ stepsはファイル全体でのoptimizer更新総数です。6レコードの�
 
 ## 使うワークフローと確認範囲
 
-[編集用workflow](../workflows/moss_slider_train_prompts.json) を開き、checkpoint_name、MOSS用CLIP、prompt_yamlを選択します。[API版](../workflows/moss_slider_train_prompts_api.json) も同梱しています。初期選択は女性若返りの `deaging_slider_fullbody.yaml`、出力名は `deaging_slider` です。学習初期値は **steps=600、rank=16、alpha=2、learning_rate=0.0002、eta=1.5、768×768、rollout_steps=16**、seed=0、gradient_checkpointing=true、blocks_to_swap=0、teacher_normalization=neutral_l2です。ノードを新規追加した場合の既定値も同じです。
+[編集用workflow](../workflows/moss_slider_train_prompts.json) を開き、checkpoint_name、MOSS用CLIP、prompt_yamlを選択します。[API版](../workflows/moss_slider_train_prompts_api.json) も同梱しています。初期選択は女性若返りの `deaging_slider_fullbody.yaml`、出力名は `moss_slider` です。学習初期値は **steps=600、rank=16、alpha=2、learning_rate=0.0002、eta=1.5、768×768、rollout_steps=16**、seed=0、gradient_checkpointing=true、blocks_to_swap=0、teacher_normalization=neutral_l2です。ノードを新規追加した場合の既定値も同じです。
 
 ワークフローの基底モデル名は `moodyMossMixFreeDownload_v1025STEPSCFG3_int8.safetensors` です。手元の登録名へ変更してください。600 stepsでは6レコードを各100回使用します。これらは初期値であり、すべてのモデルや学習方向に対する最適値ではありません。強度を上げると、目的の変化に加えて体格・構図・装飾品も変わることがあるため、同じseed・promptで比較してください。
 
@@ -67,3 +68,14 @@ stepsはファイル全体でのoptimizer更新総数です。6レコードの�
 2026-10-19、R9700上のComfyUIで女性加齢の全6レコードを実encoderから6 step学習し、有限loss/gradientとLoRA保存、prompt_sourceのSHA256一致を確認しました。当時の5ファイルの読込・構造はテスト済みですが、各sliderの画質・方向効果・性別分離・構図保持は未評価です。負の強度で望む逆方向の効果が得られる保証もありません。
 
 詳細は[実機検証記録](../docs/prompt-ui-validation-20261019.md)を参照してください。記録内のローカルパスや生成物は検証時のもので、配布物には含まれません。
+
+## 女性限定若返りv2の評価
+
+`realistic_female_only_deaging_slider_v2.yaml` はMOSS-Imageでの採否を決めるための初期候補です。全12レコードで `target == negative == neutral` とし、`positive` では女性の年齢・顔・頭身・手足だけを幼児へ変えています。男性の記述は各ペアで同一です。3組の配色について、男女への色の割当と左右配置を入れ替えています。男性の保持や性別分離を保証するマスク・追加lossはありません。MOSSでの学習・画像評価は未実施です。
+
+1. ComfyUIを再起動して、Trainノードの `prompt_yaml` にこのファイルを選択します。`output_prefix` は `moss_realistic_female_only_deaging_v2_trial01` などの別名にし、既存LoRAと区別します。
+2. 初回は上記のMOSSノード既定値で学習します。Krea2の `single`、`teacher_guidance_scale`、`teacher_norm_reference` はこのノードの設定ではありません。600 stepsでは各レコード50更新です。既存6レコードセットと同じ総更新数でも、1レコードあたりの更新数は半分になります。
+3. 同じ基底モデルと **MOSS Slider Apply INT8** を使い、成人男女を描く同一prompt・seedで強度 `0 / 0.5 / 1 / 2` を比較します。各強度で同じ初期ノイズを使い、生成用seedの制御は `fixed` にします。複数seedで繰り返し、生成設定と学習manifestを保存します。効果を見るため、比較用promptの女性は成人のまま記述します。
+4. 学習レコードのtargetに加え、未学習の服色・背景、左右を入れ替えた構図、女性1人、男性1人でも確認します。女性の顔と全身の幼児化、男性の年齢・身長・体格、服色・着衣状態、人数・左右・全身の収まり、写真らしさを分けて記録します。
+
+女性の変化が複数seedで再現し、男性と構図の変化が許容範囲なら採用候補とします。男性まで若返る場合は性別分離、色や左右で効き方が変わる場合は配色・配置への依存を優先して見直します。顔だけ変わって体格が残る場合は全身比率の対比を調整します。強度2だけで崩れる場合は低強度での実用性を先に判断します。次の試行では本文か学習設定の一方だけを変え、別名で保存します。
