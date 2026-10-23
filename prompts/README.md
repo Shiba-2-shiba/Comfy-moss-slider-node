@@ -12,13 +12,14 @@
 | [deaging_slider_fullbody.yaml](deaging_slider_fullbody.yaml) | 着衣の成人女性から、約4歳の着衣の女児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
 | [deaging_slider_fullbody_male.yaml](deaging_slider_fullbody_male.yaml) | 着衣の成人男性から、約4歳の着衣の男児へ。顔と頭身・手足の比率を変える | 全身4件、腰上2件 |
 | [breast_size_slider.yaml](breast_size_slider.yaml) | 着衣の成人女性の胸を大きくする。小さい胸との明示的な対比 | 上半身〜腰下4件、全身2件 |
+| [hatsune_miku_identity_no_costume.yaml](hatsune_miku_identity_no_costume.yaml) | 初音ミクの名前・青緑のツインテール・瞳・顔立ちを差分にする。衣装は各ペアで同一 | 6種類の普段着 × 顔寄り・腰上・全身の18件 |
 | [realistic_female_only_deaging_slider_v2.yaml](realistic_female_only_deaging_slider_v2.yaml) | 実写調・男女2人のうち女性だけを成人から幼児へ変えることを狙う評価用セット | 全身12件、左右と男女の配色を交差 |
 
-従来の6セットは各6レコード、新しい実写女性限定若返りv2は12レコード、合計48レコードです。アニメ調加齢セットでは成人の体格と髪を保ち、皮膚の記述だけを変えています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。アニメ調5セットは2D anime、残り2セットは写真の英語キャプションです。同じレコードの衣装・姿勢・背景・光を揃えています。実写加齢では年齢と顔の輪郭の変化も明記し、髪色・髪型は対で保っています。モデル固有のトリガー語は含めていません。
+従来の6セットは各6レコード、実写女性限定若返りv2は12レコード、初音ミク外見セットは18レコード、合計66レコードです。アニメ調加齢セットでは成人の体格と髪を保ち、皮膚の記述だけを変えています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。初音ミクを含むアニメ調6セットは2D anime、残り2セットは写真の英語キャプションです。同じレコードの衣装・姿勢・背景・光を揃えています。実写加齢では年齢と顔の輪郭の変化も明記し、髪色・髪型は対で保っています。初音ミクセットだけはpositiveにキャラクター名と作品名を含めています。
 
 ## 書き方と出典
 
-従来の6セットはKrea2 Sliderの学習方向と、複数の構図で対を作る方式を参考に、本文をMOSS向けに新規記述しました。実写女性限定若返りv2は、モデル差を評価する最初の比較用として、元のKrea2用YAMLの全12レコードの本文と順序を維持しています。MOSS向けにヘッダーの設定説明を変更しました。参照元は[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)を参照してください。Krea2の学習設定やanchor機能を移植したものではありません。
+従来の6セットはKrea2 Sliderの学習方向と、複数の構図で対を作る方式を参考に、本文をMOSS向けに新規記述しました。初音ミク外見セットも本文を新規記述しています。実写女性限定若返りv2は、モデル差を評価する最初の比較用として、元のKrea2用YAMLの全12レコードの本文と順序を維持しています。MOSS向けにヘッダーの設定説明を変更しました。参照元は[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)を参照してください。Krea2の学習設定やanchor機能を移植したものではありません。
 
 完成画像に見える人物・外見・服・構図・背景・色・光・画風を自然な英語で記述しています。本文へsystem指示、チャット特殊トークン、品質スコアの羅列を追加しません。MOSS用のテンプレートはnative CLIPが付与します。
 
@@ -68,6 +69,28 @@ stepsはファイル全体でのoptimizer更新総数です。6レコードの�
 2026-10-19、R9700上のComfyUIで女性加齢の全6レコードを実encoderから6 step学習し、有限loss/gradientとLoRA保存、prompt_sourceのSHA256一致を確認しました。当時の5ファイルの読込・構造はテスト済みですが、各sliderの画質・方向効果・性別分離・構図保持は未評価です。負の強度で望む逆方向の効果が得られる保証もありません。
 
 詳細は[実機検証記録](../docs/prompt-ui-validation-20261019.md)を参照してください。記録内のローカルパスや生成物は検証時のもので、配布物には含まれません。
+
+## 初音ミク外見セット（衣装を差分から除外）
+
+`hatsune_miku_identity_no_costume.yaml` は、一般的な女性キャラクターから初音ミクの外見へ近づける評価用セットです。positiveだけに `Hatsune Miku from Vocaloid`、長い青緑の高い位置のツインテール、前髪、青緑の瞳、小さな鼻と口を持つ顔立ちを記述しています。target・negative・neutralには同一の一般キャラクターを使います。YAMLの `&miku_base_XX` / `*miku_base_XX` は本文を共有する標準のanchor/aliasで、追加の学習機能ではありません。
+
+クリーム色のセーター、赤茶色のブラウス、紺色のパーカー、オリーブ色のカーディガン、ラベンダー色のワンピース、デニムジャケットの6種類を、それぞれ顔寄り・腰上・全身で記述しています。衣装・姿勢・表情・背景・光と、ヘッドセットや装飾品を身につけない記述は、各レコードの全roleで同一です。比較側の髪型・目の色は3種類を各衣装・各構図に均等に割り当て、特定の衣装と一つの比較外見だけが結びつかないようにしています。公式衣装・ヘッドセット・髪飾り・01のマーキングをpositiveの追加特徴にしていません。
+
+これは衣装をteacherのプロンプト差分から外す設計です。衣装に関わる重みを個別に凍結する仕組みや、衣装保持の追加loss・領域maskはありません。キャラ名から公式衣装や装飾品が出る可能性は残ります。顔立ちの再現や衣装からの独立性を含め、MOSS実モデルでの学習・生成評価は未実施です。
+
+1. ComfyUIを再起動し、**MOSS Slider Train from Prompts** の `prompt_yaml` にこのファイルを選びます。出力名は `moss_hatsune_miku_identity_trial01` などにします。既存ワークフローの選択ファイルは自動変更されません。
+2. `teacher_normalization=neutral_l2` を使う場合、neutralはtargetと同じ予測を再利用します。stepsは18件全体の更新総数です。600 stepsなら各レコード33〜34更新、612 stepsなら各34更新です。これらは更新回数の例で、品質を確認した推奨値ではありません。
+3. 学習時と同じ基底と **MOSS Slider Apply INT8** を使い、同じprompt・seedで強度 `0 / 0.5 / 1` を比較します。まずtargetの本文を生成に使い、キャラ名を指定しなくても外見の方向が現れるかを見ます。髪・瞳・顔立ちの変化と、衣装・構図の変化を別々に評価します。
+4. 未学習の衣装でも複数seedで確認します。例えば下記を使い、白いブラウス・バーガンディーのコート・ベージュのズボンが保持されるか、ヘッドセット・公式衣装・01の文字が混ざらないかを確認します。キャラ名を含める生成も別に試し、基底モデル由来の衣装傾向とLoRAによる変化を、強度0との比較で見ます。
+
+```text
+A 2D anime illustration depicts one female character with shoulder-length brown
+hair and brown eyes. She wears a plain burgundy coat over a white blouse,
+beige trousers, and brown ankle boots. A full-body three-quarter view shows
+her standing at a quiet train station with a neutral expression. She wears
+no headphones or jewelry. Her clothes and visible skin have no lettering
+or emblems. Soft daylight illuminates the scene.
+```
 
 ## 女性限定若返りv2の評価
 
