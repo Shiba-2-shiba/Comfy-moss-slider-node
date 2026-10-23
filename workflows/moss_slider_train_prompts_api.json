@@ -27,7 +27,7 @@
       "rollout_steps": 16,
       "gradient_checkpointing": true,
       "blocks_to_swap": 0,
-      "output_prefix": "deaging_slider",
+      "output_prefix": "moss_slider",
       "teacher_normalization": "neutral_l2"
     }
   }

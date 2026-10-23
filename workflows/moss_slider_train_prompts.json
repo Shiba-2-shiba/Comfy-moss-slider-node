@@ -80,12 +80,13 @@
         0.0002,
         1.5,
         0,
+        "fixed",
         768,
         768,
         16,
         true,
         0,
-        "deaging_slider",
+        "moss_slider",
         "neutral_l2"
       ]
     }
