@@ -19,8 +19,13 @@
 | [hatsune_miku_identity_no_costume.yaml](hatsune_miku_identity_no_costume.yaml) | 初音ミク風の髪・瞳・顔立ちを直接記述。本文は全roleで肯定形 | 6種類の普段着、腰上4件・太もも上まで2件 |
 | [hatsune_miku_identity_no_costume_realistic.yaml](hatsune_miku_identity_no_costume_realistic.yaml) | 実写の成人女性を初音ミク風の外見へ。衣装・姿勢・構図は各ペアで同一 | 6種類の普段着、腰上4件・太もも上まで2件 |
 | [realistic_female_only_deaging_slider_v2.yaml](realistic_female_only_deaging_slider_v2.yaml) | 実写調・男女2人のうち女性だけを成人から幼児へ変えることを狙う評価用セット | 全身12件、左右と男女の配色を交差 |
+| [realistic_female_only_aging_slider_v2.yaml](realistic_female_only_aging_slider_v2.yaml) | 実写調・男女2人のうち女性だけを30代から約70歳へ加齢 | 全身12件、女性限定若返りv2の配色・配置を継承 |
+| [realistic_male_only_deaging_slider_v2.yaml](realistic_male_only_deaging_slider_v2.yaml) | 実写調・男女2人のうち男性だけを30代から幼児へ若返り | 全身12件、女性限定若返りv2の配色・配置を継承 |
+| [realistic_male_only_aging_slider_v2.yaml](realistic_male_only_aging_slider_v2.yaml) | 実写調・男女2人のうち男性だけを30代から約70歳へ加齢 | 全身12件、女性限定若返りv2の配色・配置を継承 |
+| [realistic_clothing_fit_tighten.yaml](realistic_clothing_fit_tighten.yaml) | 実写調・成人女性の服を体に沿うフィットへ。通常fitが基準、ゆったりfitと対比 | 頭から腰下5件、頭から膝下1件 |
+| [realistic_clothing_loosen.yaml](realistic_clothing_loosen.yaml) | 実写調・成人女性の服をゆったりしたフィットへ。通常fitが基準、体に沿うfitと対比 | 頭から腰下5件、頭から膝下1件 |
 
-全13セット・合計90レコードです。初音ミク外見を含む11セットは各6レコード、実写女性限定若返りv2と実写胸サイズは各12レコードです。アニメ調6セットと実写調7セットから選べます。加齢セットでは成人の体格と髪を保ち、女性の既存実写加齢セットでは年齢と顔の輪郭の変化も明記しています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。同じレコードの衣装・姿勢・背景・光を揃えています。初音ミク外見の修正版はキャラクター名を本文に含めず、外見を直接記述しています。
+全18セット・合計138レコードです。初音ミク外見と実写衣服フィットを含む13セットは各6レコード、性別限定v2の4セットと実写胸サイズは各12レコードです。アニメ調6セットと実写調12セットから選べます。加齢セットでは成人の体格と髪を保ち、女性の既存実写加齢セットでは年齢と顔の輪郭の変化も明記しています。若返りセットは成人から幼児への年齢・体格変化を学習する内容です。胸サイズではtargetは中程度、positiveは大きい胸、negativeは小さい胸です。同じレコードの衣装・姿勢・背景・光を揃えています。初音ミク外見の修正版はキャラクター名を本文に含めず、外見を直接記述しています。
 
 ## MoodyMossなどの実写寄りモデルで使うセット
 
@@ -110,7 +115,7 @@ Soft daylight illuminates her face, hair, and plain everyday clothing.
 
 ## 女性限定若返りv2の評価
 
-`realistic_female_only_deaging_slider_v2.yaml` はMOSS-Imageでの採否を決めるための初期候補です。全12レコードで `target == negative == neutral` とし、`positive` では女性の年齢・顔・頭身・手足だけを幼児へ変えています。男性の記述は各ペアで同一です。3組の配色について、男女への色の割当と左右配置を入れ替えています。男性の保持や性別分離を保証するマスク・追加lossはありません。MOSSでの学習・画像評価は未実施です。
+`realistic_female_only_deaging_slider_v2.yaml` はMOSS-Imageでの採否を決めるための初期候補です。全12レコードで `target == negative == neutral` とし、`positive` では女性の年齢・顔・頭身・手足だけを幼児へ変えています。男性の記述は各ペアで同一です。3組の配色について、男女への色の割当と左右配置を入れ替えています。男性の保持や性別分離を保証するマスク・追加lossはありません。ユーザーから期待した効果が得られたとの報告があります。今回、その画像・学習設定の独立した再検証は実施していません。
 
 1. ComfyUIを再起動して、Trainノードの `prompt_yaml` にこのファイルを選択します。`output_prefix` は `moss_realistic_female_only_deaging_v2_trial01` などの別名にし、既存LoRAと区別します。
 2. 初回は上記のMOSSノード既定値で学習します。Krea2の `single`、`teacher_guidance_scale`、`teacher_norm_reference` はこのノードの設定ではありません。600 stepsでは各レコード50更新です。既存6レコードセットと同じ総更新数でも、1レコードあたりの更新数は半分になります。
@@ -118,6 +123,35 @@ Soft daylight illuminates her face, hair, and plain everyday clothing.
 4. 学習レコードのtargetに加え、未学習の服色・背景、左右を入れ替えた構図、女性1人、男性1人でも確認します。女性の顔と全身の幼児化、男性の年齢・身長・体格、服色・着衣状態、人数・左右・全身の収まり、写真らしさを分けて記録します。
 
 女性の変化が複数seedで再現し、男性と構図の変化が許容範囲なら採用候補とします。男性まで若返る場合は性別分離、色や左右で効き方が変わる場合は配色・配置への依存を優先して見直します。顔だけ変わって体格が残る場合は全身比率の対比を調整します。強度2だけで崩れる場合は低強度での実用性を先に判断します。次の試行では本文か学習設定の一方だけを変え、別名で保存します。
+
+## 性別限定v2の追加3セット
+
+ユーザーから期待した効果が得られたと報告された `realistic_female_only_deaging_slider_v2.yaml` を基に、女性のみ加齢・男性のみ若返り・男性のみ加齢を追加しました。元セットの12レコードの順序、3組の配色と男女への色の割当、左右配置、衣装、髪型、全身構図、背景、光を引き継いでいます。元の女性限定若返りYAMLは変更していません。
+
+- `realistic_female_only_aging_slider_v2.yaml`: 女性は30代の滑らかな肌から約70歳へ。顔のしわ、頬・顎の輪郭、首・手の皮膚を変え、成人の身長・頭身・手足と髪型・髪色を保ちます。男性は元セットの30代の記述を維持します。
+- `realistic_male_only_deaging_slider_v2.yaml`: 男性は30代から幼児へ。幼い顔、大きな頭の比率、低い身長、小さな肩・手、短い手足を記述します。女性は元セットの成人の記述を維持します。服・靴は各自の体格に合うサイズとして対内で共通です。
+- `realistic_male_only_aging_slider_v2.yaml`: 男性は30代から約70歳へ。顔のしわ、頬・顎の輪郭、首・手の皮膚を変え、成人の身長・頭身・手足と短い黒髪・ひげのない顔を保ちます。女性は元セットの成人の記述を維持します。
+
+全件で `target == negative == neutral` です。positiveでは対象の人物の年齢・外見だけを変更し、相手の人物・衣装・姿勢・背景などの本文は一致させています。性別限定は学習意図であり、マスクや保持lossを追加するものではありません。
+
+ComfyUIを再起動またはノード定義を再読込し、`prompt_yaml`で追加ファイルを選択してください。初回は効果が得られた元セットの基底モデル・学習設定を使い、`output_prefix`だけセットごとの新しい名前にします。各12件なので600 stepsなら各50更新です。既存LoRAは更新されないため、各セットで新たに学習します。
+
+同一prompt・seed・生成設定で強度 `0 / 0.5 / 1` を比較し、対象人物の変化と相手の年齢・体格の保持を分けて確認します。左右を入れ替えた構図や未学習の服色でも確認してください。追加3セットの読込・本文整合性と、学習後の効果は別の検証です。追加版の学習・生成画像評価は未実施です。
+
+## 実写衣服フィットの2セット
+
+Krea2用の `clothing_fit_tighten_slider_v2.yaml` と `clothing_fit_loosen_slider_v2.yaml` を基に、全roleのアニメ・セル塗り表現を、自然な肌と布地を描く実写のスタジオ写真へ変更しました。MOSS用native CLIPを接続し、Trainノードの `prompt_yaml` で選択します。Krea2の `training_direction=single` はMOSSノードの設定ではありません。
+
+| ファイル | target / neutral | positive（正のLoRA強度の方向） | negative（教師の比較対象） |
+|---|---|---|---|
+| `realistic_clothing_fit_tighten.yaml` | 通常のフィット | 体に沿うフィット | ゆとりの大きいフィット |
+| `realistic_clothing_loosen.yaml` | 通常のフィット | ゆとりの大きいフィット | 体に沿うフィット |
+
+各6件で、ブラウス、カーディガン、ジャケット、セーター、トップス、ワンピースを元の順序で使います。2ファイルのtargetは同一で、positiveとnegativeを入れ替えています。対内で異なるのは服と体の隙間・腰の輪郭・袖幅を記述する2文だけです。成人女性の体格、髪、衣装の種類・色・着衣状態、姿勢、構図、背景、光は共通です。カーディガンとジャケットはインナーの上からのフィットを記述します。
+
+腕を少し体から離し、上着は頭から腰下まで、ワンピースは頭から膝下までを写して、服の輪郭と裾を見せます。対象は衣服のゆとりであり、胸サイズや体型そのものの変更ではありません。neutralはtargetと同じ通常fitのL2正規化参照で、体格・顔を固定する追加lossやマスクではありません。
+
+初回は比較したいMOSS基底モデルと学習設定を揃え、各セットで別の `output_prefix` を使って学習します。600 stepsでは各レコード100更新です。同じprompt・seed・生成設定で強度 `0 / 0.5 / 1` を比較し、布と胴体の隙間、腰の外形、袖幅を確認します。顔・髪・体格・衣装の種類と色への副作用も確認してください。新2セットの学習・生成画像評価は未実施です。
 
 ## 実写胸サイズの評価
 

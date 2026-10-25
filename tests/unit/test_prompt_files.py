@@ -90,6 +90,11 @@ def test_packaged_presets_are_loadable_training_records():
         "hatsune_miku_identity_no_costume.yaml": 6,
         "hatsune_miku_identity_no_costume_realistic.yaml": 6,
         "realistic_female_only_deaging_slider_v2.yaml": 12,
+        "realistic_female_only_aging_slider_v2.yaml": 12,
+        "realistic_male_only_deaging_slider_v2.yaml": 12,
+        "realistic_male_only_aging_slider_v2.yaml": 12,
+        "realistic_clothing_fit_tighten.yaml": 6,
+        "realistic_clothing_loosen.yaml": 6,
     }
     assert set(names) == set(expected_counts)
     for name in names:

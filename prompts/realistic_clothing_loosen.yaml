@@ -1,0 +1,249 @@
+# MOSS-Image realistic clothing fit: positive strength moves toward a loose fit.
+# Adapted from Confyui-krea2-slider-node/prompts/clothing_fit_loosen_slider_v2.yaml.
+# Six records: blouse, cardigan, jacket, sweater, top, dress; original order and fit contrasts retained.
+# All roles use photographic style, natural skin texture and realistic fabric detail.
+# target == neutral: regular fit; positive/negative describe opposite fit poles.
+# positive: loose fit; negative: close fit.
+# Only the two clothing-fit sentences differ between roles in each record.
+# Garment type/color, adult body, hair, pose, framing, background and lighting are shared within each record.
+# Cardigan and jacket fits are described over their underlying tops; complete garment outlines are visible.
+# Use native MOSS CLIP (type=moss_image); choose this file via prompt_yaml.
+# Use the same base and training settings as your comparison trial, with a distinct output_prefix.
+# steps=600 is the total update count: 100 updates per record.
+# neutral is an L2 normalization reference, not a preservation loss or region mask.
+# negative is a teacher comparison caption, not a generation exclusion list.
+# Captions do not configure node settings. Training and generated-image effects are unvalidated.
+
+# 0: blouse; centered front view, head to below hips
+- target: &base0 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The blouse has a regular fit with moderate fabric allowance around her torso
+    and upper arms. Its side outline leaves a small amount of room at the waist, and the sleeves have
+    ordinary width around her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her shoulder-length dark brown hair rests behind her
+    shoulders. She wears a plain, opaque, charcoal blouse with a high round neckline and long sleeves,
+    and dark straight-leg trousers. She stands upright with relaxed shoulders, a neutral expression, and
+    her arms slightly away from her sides, leaving the garment outline unobstructed. A centered front
+    view shows her from the top of her head to below her hips, with her face, shoulders, full sleeves,
+    waist, and the complete blouse outline clearly visible. A clean, bright studio with a plain pale
+    wall and soft, even lighting. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The blouse has a loose fit with ample space between the fabric and her torso
+    and upper arms. Its side outline hangs well away from her waist, and the sleeves are visibly wider
+    than her arms. She has an average build, medium-width shoulders, a defined waist, medium-width hips,
+    and moderately slender arms. Her shoulder-length dark brown hair rests behind her shoulders. She
+    wears a plain, opaque, charcoal blouse with a high round neckline and long sleeves, and dark
+    straight-leg trousers. She stands upright with relaxed shoulders, a neutral expression, and her arms
+    slightly away from her sides, leaving the garment outline unobstructed. A centered front view shows
+    her from the top of her head to below her hips, with her face, shoulders, full sleeves, waist, and
+    the complete blouse outline clearly visible. A clean, bright studio with a plain pale wall and soft,
+    even lighting. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The blouse fits closely around her torso and upper arms, with very little
+    space between the fabric and her body. Its side outline follows her waist, and the sleeves closely
+    follow the shape of her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her shoulder-length dark brown hair rests behind her
+    shoulders. She wears a plain, opaque, charcoal blouse with a high round neckline and long sleeves,
+    and dark straight-leg trousers. She stands upright with relaxed shoulders, a neutral expression, and
+    her arms slightly away from her sides, leaving the garment outline unobstructed. A centered front
+    view shows her from the top of her head to below her hips, with her face, shoulders, full sleeves,
+    waist, and the complete blouse outline clearly visible. A clean, bright studio with a plain pale
+    wall and soft, even lighting. She is fully clothed.
+  neutral: *base0
+
+# 1: cardigan; three-quarter view, head to below hips
+- target: &base1 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The cardigan has a regular fit with moderate fabric allowance around her torso
+    and upper arms. Its side outline leaves a small amount of room at the waist, and the sleeves have
+    ordinary width around her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her long dark brown hair rests behind her shoulders.
+    She wears a plain, opaque, charcoal cardigan buttoned over a light gray top with a high round
+    neckline, and dark straight-leg trousers. She stands upright with relaxed shoulders, a neutral
+    expression, and her arms slightly away from her sides, leaving the garment outline unobstructed. A
+    three-quarter view shows her from the top of her head to below her hips, with her face, shoulders,
+    full sleeves, waist, and the complete cardigan outline clearly visible. A clean, bright studio with
+    a plain pale wall and soft, even lighting. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The cardigan has a loose fit over the underlying top, with ample space around
+    her torso and upper arms. Its side outline hangs well away from her waist, and the sleeves are
+    visibly wider than her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her long dark brown hair rests behind her shoulders.
+    She wears a plain, opaque, charcoal cardigan buttoned over a light gray top with a high round
+    neckline, and dark straight-leg trousers. She stands upright with relaxed shoulders, a neutral
+    expression, and her arms slightly away from her sides, leaving the garment outline unobstructed. A
+    three-quarter view shows her from the top of her head to below her hips, with her face, shoulders,
+    full sleeves, waist, and the complete cardigan outline clearly visible. A clean, bright studio with
+    a plain pale wall and soft, even lighting. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The cardigan fits closely over the underlying top around her torso and upper
+    arms, with very little extra fabric allowance. Its side outline follows her waist, and the sleeves
+    closely follow the shape of her arms. She has an average build, medium-width shoulders, a defined
+    waist, medium-width hips, and moderately slender arms. Her long dark brown hair rests behind her
+    shoulders. She wears a plain, opaque, charcoal cardigan buttoned over a light gray top with a high
+    round neckline, and dark straight-leg trousers. She stands upright with relaxed shoulders, a neutral
+    expression, and her arms slightly away from her sides, leaving the garment outline unobstructed. A
+    three-quarter view shows her from the top of her head to below her hips, with her face, shoulders,
+    full sleeves, waist, and the complete cardigan outline clearly visible. A clean, bright studio with
+    a plain pale wall and soft, even lighting. She is fully clothed.
+  neutral: *base1
+
+# 2: jacket; centered front view, head to below hips
+- target: &base2 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The jacket has a regular fit with moderate fabric allowance around her torso
+    and upper arms. Its side outline leaves a small amount of room at the waist, and the sleeves have
+    ordinary width around her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her short dark brown hair is tucked behind her ears.
+    She wears a plain, opaque, charcoal hip-length jacket closed over a light gray top with a high round
+    neckline, and a dark knee-length skirt. She stands upright with relaxed shoulders, a neutral
+    expression, and her arms slightly away from her sides, leaving the garment outline unobstructed. A
+    centered front view shows her from the top of her head to below her hips, with her face, shoulders,
+    full sleeves, waist, and the complete jacket outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The jacket has a loose fit over the underlying top, with ample space around
+    her torso and upper arms. Its side outline hangs well away from her waist, and the sleeves are
+    visibly wider than her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her short dark brown hair is tucked behind her ears.
+    She wears a plain, opaque, charcoal hip-length jacket closed over a light gray top with a high round
+    neckline, and a dark knee-length skirt. She stands upright with relaxed shoulders, a neutral
+    expression, and her arms slightly away from her sides, leaving the garment outline unobstructed. A
+    centered front view shows her from the top of her head to below her hips, with her face, shoulders,
+    full sleeves, waist, and the complete jacket outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The jacket fits closely over the underlying top around her torso and upper
+    arms, with very little extra fabric allowance. Its side outline follows her waist, and the sleeves
+    closely follow the shape of her arms. She has an average build, medium-width shoulders, a defined
+    waist, medium-width hips, and moderately slender arms. Her short dark brown hair is tucked behind
+    her ears. She wears a plain, opaque, charcoal hip-length jacket closed over a light gray top with a
+    high round neckline, and a dark knee-length skirt. She stands upright with relaxed shoulders, a
+    neutral expression, and her arms slightly away from her sides, leaving the garment outline
+    unobstructed. A centered front view shows her from the top of her head to below her hips, with her
+    face, shoulders, full sleeves, waist, and the complete jacket outline clearly visible. A clean,
+    bright studio with a plain pale wall and soft, even lighting. She is fully clothed.
+  neutral: *base2
+
+# 3: sweater; three-quarter view, head to below hips
+- target: &base3 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The sweater has a regular fit with moderate fabric allowance around her torso
+    and upper arms. Its side outline leaves a small amount of room at the waist, and the sleeves have
+    ordinary width around her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her shoulder-length dark brown hair rests behind her
+    shoulders. She wears a plain, opaque, charcoal knit sweater with a high round neckline and long
+    sleeves, and dark straight-leg trousers. She stands upright with relaxed shoulders, a neutral
+    expression, and her arms slightly away from her sides, leaving the garment outline unobstructed. A
+    three-quarter view shows her from the top of her head to below her hips, with her face, shoulders,
+    full sleeves, waist, and the complete sweater outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The sweater has a loose fit with ample space between the fabric and her torso
+    and upper arms. Its side outline hangs well away from her waist, and the sleeves are visibly wider
+    than her arms. She has an average build, medium-width shoulders, a defined waist, medium-width hips,
+    and moderately slender arms. Her shoulder-length dark brown hair rests behind her shoulders. She
+    wears a plain, opaque, charcoal knit sweater with a high round neckline and long sleeves, and dark
+    straight-leg trousers. She stands upright with relaxed shoulders, a neutral expression, and her arms
+    slightly away from her sides, leaving the garment outline unobstructed. A three-quarter view shows
+    her from the top of her head to below her hips, with her face, shoulders, full sleeves, waist, and
+    the complete sweater outline clearly visible. A clean, bright studio with a plain pale wall and
+    soft, even lighting. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The sweater fits closely around her torso and upper arms, with very little
+    space between the fabric and her body. Its side outline follows her waist, and the sleeves closely
+    follow the shape of her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her shoulder-length dark brown hair rests behind her
+    shoulders. She wears a plain, opaque, charcoal knit sweater with a high round neckline and long
+    sleeves, and dark straight-leg trousers. She stands upright with relaxed shoulders, a neutral
+    expression, and her arms slightly away from her sides, leaving the garment outline unobstructed. A
+    three-quarter view shows her from the top of her head to below her hips, with her face, shoulders,
+    full sleeves, waist, and the complete sweater outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. She is fully clothed.
+  neutral: *base3
+
+# 4: top; centered front view, head to below hips
+- target: &base4 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The top has a regular fit with moderate fabric allowance around her torso and
+    upper arms. Its side outline leaves a small amount of room at the waist, and the sleeves have
+    ordinary width around her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her long dark brown hair rests behind her shoulders.
+    She wears a plain, opaque, charcoal long-sleeve top with a high round neckline, and a dark
+    knee-length skirt. She stands upright with relaxed shoulders, a neutral expression, and her arms
+    slightly away from her sides, leaving the garment outline unobstructed. A centered front view shows
+    her from the top of her head to below her hips, with her face, shoulders, full sleeves, waist, and
+    the complete top outline clearly visible. A clean, bright studio with a plain pale wall and soft,
+    even lighting. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The top has a loose fit with ample space between the fabric and her torso and
+    upper arms. Its side outline hangs well away from her waist, and the sleeves are visibly wider than
+    her arms. She has an average build, medium-width shoulders, a defined waist, medium-width hips, and
+    moderately slender arms. Her long dark brown hair rests behind her shoulders. She wears a plain,
+    opaque, charcoal long-sleeve top with a high round neckline, and a dark knee-length skirt. She
+    stands upright with relaxed shoulders, a neutral expression, and her arms slightly away from her
+    sides, leaving the garment outline unobstructed. A centered front view shows her from the top of her
+    head to below her hips, with her face, shoulders, full sleeves, waist, and the complete top outline
+    clearly visible. A clean, bright studio with a plain pale wall and soft, even lighting. She is fully
+    clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The top fits closely around her torso and upper arms, with very little space
+    between the fabric and her body. Its side outline follows her waist, and the sleeves closely follow
+    the shape of her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her long dark brown hair rests behind her shoulders.
+    She wears a plain, opaque, charcoal long-sleeve top with a high round neckline, and a dark
+    knee-length skirt. She stands upright with relaxed shoulders, a neutral expression, and her arms
+    slightly away from her sides, leaving the garment outline unobstructed. A centered front view shows
+    her from the top of her head to below her hips, with her face, shoulders, full sleeves, waist, and
+    the complete top outline clearly visible. A clean, bright studio with a plain pale wall and soft,
+    even lighting. She is fully clothed.
+  neutral: *base4
+
+# 5: dress; three-quarter view, head to below knees
+- target: &base5 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The dress has a regular fit with moderate fabric allowance around her torso
+    and upper arms. Its side outline leaves a small amount of room at the waist, and the sleeves have
+    ordinary width around her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her short dark brown hair is tucked behind her ears.
+    She wears a plain, opaque, charcoal knee-length casual dress with a high round neckline and long
+    sleeves. She stands upright with relaxed shoulders, a neutral expression, and her arms slightly away
+    from her sides, leaving the garment outline unobstructed. A three-quarter view shows her from the
+    top of her head to below her knees, with her face, shoulders, full sleeves, waist, complete dress
+    outline, and hem clearly visible. A clean, bright studio with a plain pale wall and soft, even
+    lighting. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The dress has a loose fit with ample space between the fabric and her torso
+    and upper arms. Its side outline hangs well away from her waist, and the sleeves are visibly wider
+    than her arms. She has an average build, medium-width shoulders, a defined waist, medium-width hips,
+    and moderately slender arms. Her short dark brown hair is tucked behind her ears. She wears a plain,
+    opaque, charcoal knee-length casual dress with a high round neckline and long sleeves. She stands
+    upright with relaxed shoulders, a neutral expression, and her arms slightly away from her sides,
+    leaving the garment outline unobstructed. A three-quarter view shows her from the top of her head to
+    below her knees, with her face, shoulders, full sleeves, waist, complete dress outline, and hem
+    clearly visible. A clean, bright studio with a plain pale wall and soft, even lighting. She is fully
+    clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail shows
+    a single adult woman. The dress fits closely around her torso and upper arms, with very little space
+    between the fabric and her body. Its side outline follows her waist, and the sleeves closely follow
+    the shape of her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. Her short dark brown hair is tucked behind her ears.
+    She wears a plain, opaque, charcoal knee-length casual dress with a high round neckline and long
+    sleeves. She stands upright with relaxed shoulders, a neutral expression, and her arms slightly away
+    from her sides, leaving the garment outline unobstructed. A three-quarter view shows her from the
+    top of her head to below her knees, with her face, shoulders, full sleeves, waist, complete dress
+    outline, and hem clearly visible. A clean, bright studio with a plain pale wall and soft, even
+    lighting. She is fully clothed.
+  neutral: *base5
