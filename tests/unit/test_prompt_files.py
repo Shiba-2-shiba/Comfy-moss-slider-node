@@ -94,6 +94,7 @@ def test_packaged_presets_are_loadable_training_records():
         "realistic_male_only_deaging_slider_v2.yaml": 12,
         "realistic_male_only_aging_slider_v2.yaml": 12,
         "realistic_clothing_fit_tighten.yaml": 6,
+        "realistic_clothing_fit_tighten_v2.yaml": 12,
         "realistic_clothing_loosen.yaml": 6,
     }
     assert set(names) == set(expected_counts)

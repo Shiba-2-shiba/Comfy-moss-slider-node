@@ -1,0 +1,570 @@
+# MOSS-Image realistic clothing fit v2: positive strength moves toward a tight, body-hugging fit.
+# Twelve records: six upper garments/dress, four lower garments, two coordinated outfits.
+# target == neutral: regular fit; positive: tight fit; negative: loose fit.
+# Only the two fit sentences differ within each record. Body, age, fabric, color, length,
+# pose, framing, background and light are shared. Skirts retain a continuous skirt silhouette.
+# Lower-only records retain the top's regular fit; upper-only records retain the lower garment.
+# Captions express preservation intent, not a body/face preservation loss or spatial mask.
+# Use native MOSS CLIP (type=moss_image). Train under a new output_prefix.
+# 600 total steps = 50 updates per record; 1200 = 100, matching the old six-record exposure.
+# These counts are not validated optimal settings. Lower-strength efficacy is unvalidated.
+
+# 0: blouse
+- target: &base0 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The blouse has a regular fit
+    with moderate fabric allowance around her torso and upper arms. Its side outline leaves a small
+    amount of room at the waist, and the sleeves have ordinary width around her arms. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her shoulder-length dark brown hair rests behind her shoulders. She wears a
+    plain, opaque, charcoal blouse with a high round neckline and long sleeves, and dark
+    straight-leg trousers. She stands upright with relaxed shoulders, a neutral expression, and her
+    arms slightly away from her sides, leaving the garment outline unobstructed. A centered front
+    view shows her from the top of her head to below her hips, with her face, shoulders, full
+    sleeves, waist, and the complete blouse outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. The blouse hem reaches her hips, and its sleeves reach
+    her wrists. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The blouse is tight-fitting and
+    body-hugging around her torso and upper arms, with taut fabric held snugly against her body. Its
+    side seams trace her waist contour, and its snug sleeves have a narrow outline that closely
+    follows her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. She has adult head-to-body proportions, an
+    adult-length torso, and adult-length arms and legs. Her shoulder-length dark brown hair rests
+    behind her shoulders. She wears a plain, opaque, charcoal blouse with a high round neckline and
+    long sleeves, and dark straight-leg trousers. She stands upright with relaxed shoulders, a
+    neutral expression, and her arms slightly away from her sides, leaving the garment outline
+    unobstructed. A centered front view shows her from the top of her head to below her hips, with
+    her face, shoulders, full sleeves, waist, and the complete blouse outline clearly visible. A
+    clean, bright studio with a plain pale wall and soft, even lighting. The blouse hem reaches her
+    hips, and its sleeves reach her wrists. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The blouse has a loose fit with
+    ample space between the fabric and her torso and upper arms. Its side outline hangs well away
+    from her waist, and the sleeves are visibly wider than her arms. She has an average build,
+    medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms. She has
+    adult head-to-body proportions, an adult-length torso, and adult-length arms and legs. Her
+    shoulder-length dark brown hair rests behind her shoulders. She wears a plain, opaque, charcoal
+    blouse with a high round neckline and long sleeves, and dark straight-leg trousers. She stands
+    upright with relaxed shoulders, a neutral expression, and her arms slightly away from her sides,
+    leaving the garment outline unobstructed. A centered front view shows her from the top of her
+    head to below her hips, with her face, shoulders, full sleeves, waist, and the complete blouse
+    outline clearly visible. A clean, bright studio with a plain pale wall and soft, even lighting.
+    The blouse hem reaches her hips, and its sleeves reach her wrists. She is fully clothed.
+  neutral: *base0
+
+# 1: cardigan over top
+- target: &base1 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The cardigan has a regular fit
+    with moderate fabric allowance around her torso and upper arms. Its side outline leaves a small
+    amount of room at the waist, and the sleeves have ordinary width around her arms. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her long dark brown hair rests behind her shoulders. She wears a plain, opaque,
+    charcoal cardigan buttoned over a light gray top with a high round neckline, and dark
+    straight-leg trousers. She stands upright with relaxed shoulders, a neutral expression, and her
+    arms slightly away from her sides, leaving the garment outline unobstructed. A three-quarter
+    view shows her from the top of her head to below her hips, with her face, shoulders, full
+    sleeves, waist, and the complete cardigan outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. The cardigan hem reaches her hips, and its sleeves
+    reach her wrists. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The cardigan is tight-fitting
+    and body-hugging over the underlying top around her torso and upper arms, with taut fabric held
+    snugly against her body. Its side seams trace her waist contour, and its snug sleeves have a
+    narrow outline that closely follows her arms. She has an average build, medium-width shoulders,
+    a defined waist, medium-width hips, and moderately slender arms. She has adult head-to-body
+    proportions, an adult-length torso, and adult-length arms and legs. Her long dark brown hair
+    rests behind her shoulders. She wears a plain, opaque, charcoal cardigan buttoned over a light
+    gray top with a high round neckline, and dark straight-leg trousers. She stands upright with
+    relaxed shoulders, a neutral expression, and her arms slightly away from her sides, leaving the
+    garment outline unobstructed. A three-quarter view shows her from the top of her head to below
+    her hips, with her face, shoulders, full sleeves, waist, and the complete cardigan outline
+    clearly visible. A clean, bright studio with a plain pale wall and soft, even lighting. The
+    cardigan hem reaches her hips, and its sleeves reach her wrists. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The cardigan has a loose fit
+    over the underlying top, with ample space around her torso and upper arms. Its side outline
+    hangs well away from her waist, and the sleeves are visibly wider than her arms. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her long dark brown hair rests behind her shoulders. She wears a plain, opaque,
+    charcoal cardigan buttoned over a light gray top with a high round neckline, and dark
+    straight-leg trousers. She stands upright with relaxed shoulders, a neutral expression, and her
+    arms slightly away from her sides, leaving the garment outline unobstructed. A three-quarter
+    view shows her from the top of her head to below her hips, with her face, shoulders, full
+    sleeves, waist, and the complete cardigan outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. The cardigan hem reaches her hips, and its sleeves
+    reach her wrists. She is fully clothed.
+  neutral: *base1
+
+# 2: jacket over top
+- target: &base2 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The jacket has a regular fit
+    with moderate fabric allowance around her torso and upper arms. Its side outline leaves a small
+    amount of room at the waist, and the sleeves have ordinary width around her arms. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her short dark brown hair is tucked behind her ears. She wears a plain, opaque,
+    charcoal hip-length jacket closed over a light gray top with a high round neckline, and a dark
+    knee-length skirt. She stands upright with relaxed shoulders, a neutral expression, and her arms
+    slightly away from her sides, leaving the garment outline unobstructed. A centered front view
+    shows her from the top of her head to below her hips, with her face, shoulders, full sleeves,
+    waist, and the complete jacket outline clearly visible. A clean, bright studio with a plain pale
+    wall and soft, even lighting. The jacket hem reaches her hips, and its sleeves reach her wrists.
+    She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The jacket is tight-fitting and
+    body-hugging over the underlying top around her torso and upper arms, with taut fabric held
+    snugly against her body. Its side seams trace her waist contour, and its snug sleeves have a
+    narrow outline that closely follows her arms. She has an average build, medium-width shoulders,
+    a defined waist, medium-width hips, and moderately slender arms. She has adult head-to-body
+    proportions, an adult-length torso, and adult-length arms and legs. Her short dark brown hair is
+    tucked behind her ears. She wears a plain, opaque, charcoal hip-length jacket closed over a
+    light gray top with a high round neckline, and a dark knee-length skirt. She stands upright with
+    relaxed shoulders, a neutral expression, and her arms slightly away from her sides, leaving the
+    garment outline unobstructed. A centered front view shows her from the top of her head to below
+    her hips, with her face, shoulders, full sleeves, waist, and the complete jacket outline clearly
+    visible. A clean, bright studio with a plain pale wall and soft, even lighting. The jacket hem
+    reaches her hips, and its sleeves reach her wrists. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The jacket has a loose fit over
+    the underlying top, with ample space around her torso and upper arms. Its side outline hangs
+    well away from her waist, and the sleeves are visibly wider than her arms. She has an average
+    build, medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms.
+    She has adult head-to-body proportions, an adult-length torso, and adult-length arms and legs.
+    Her short dark brown hair is tucked behind her ears. She wears a plain, opaque, charcoal
+    hip-length jacket closed over a light gray top with a high round neckline, and a dark
+    knee-length skirt. She stands upright with relaxed shoulders, a neutral expression, and her arms
+    slightly away from her sides, leaving the garment outline unobstructed. A centered front view
+    shows her from the top of her head to below her hips, with her face, shoulders, full sleeves,
+    waist, and the complete jacket outline clearly visible. A clean, bright studio with a plain pale
+    wall and soft, even lighting. The jacket hem reaches her hips, and its sleeves reach her wrists.
+    She is fully clothed.
+  neutral: *base2
+
+# 3: sweater
+- target: &base3 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The sweater has a regular fit
+    with moderate fabric allowance around her torso and upper arms. Its side outline leaves a small
+    amount of room at the waist, and the sleeves have ordinary width around her arms. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her shoulder-length dark brown hair rests behind her shoulders. She wears a
+    plain, opaque, charcoal knit sweater with a high round neckline and long sleeves, and dark
+    straight-leg trousers. She stands upright with relaxed shoulders, a neutral expression, and her
+    arms slightly away from her sides, leaving the garment outline unobstructed. A three-quarter
+    view shows her from the top of her head to below her hips, with her face, shoulders, full
+    sleeves, waist, and the complete sweater outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. The sweater hem reaches her hips, and its sleeves reach
+    her wrists. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The sweater is tight-fitting and
+    body-hugging around her torso and upper arms, with taut fabric held snugly against her body. Its
+    side seams trace her waist contour, and its snug sleeves have a narrow outline that closely
+    follows her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. She has adult head-to-body proportions, an
+    adult-length torso, and adult-length arms and legs. Her shoulder-length dark brown hair rests
+    behind her shoulders. She wears a plain, opaque, charcoal knit sweater with a high round
+    neckline and long sleeves, and dark straight-leg trousers. She stands upright with relaxed
+    shoulders, a neutral expression, and her arms slightly away from her sides, leaving the garment
+    outline unobstructed. A three-quarter view shows her from the top of her head to below her hips,
+    with her face, shoulders, full sleeves, waist, and the complete sweater outline clearly visible.
+    A clean, bright studio with a plain pale wall and soft, even lighting. The sweater hem reaches
+    her hips, and its sleeves reach her wrists. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The sweater has a loose fit with
+    ample space between the fabric and her torso and upper arms. Its side outline hangs well away
+    from her waist, and the sleeves are visibly wider than her arms. She has an average build,
+    medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms. She has
+    adult head-to-body proportions, an adult-length torso, and adult-length arms and legs. Her
+    shoulder-length dark brown hair rests behind her shoulders. She wears a plain, opaque, charcoal
+    knit sweater with a high round neckline and long sleeves, and dark straight-leg trousers. She
+    stands upright with relaxed shoulders, a neutral expression, and her arms slightly away from her
+    sides, leaving the garment outline unobstructed. A three-quarter view shows her from the top of
+    her head to below her hips, with her face, shoulders, full sleeves, waist, and the complete
+    sweater outline clearly visible. A clean, bright studio with a plain pale wall and soft, even
+    lighting. The sweater hem reaches her hips, and its sleeves reach her wrists. She is fully
+    clothed.
+  neutral: *base3
+
+# 4: long-sleeve top
+- target: &base4 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The top has a regular fit with
+    moderate fabric allowance around her torso and upper arms. Its side outline leaves a small
+    amount of room at the waist, and the sleeves have ordinary width around her arms. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her long dark brown hair rests behind her shoulders. She wears a plain, opaque,
+    charcoal long-sleeve top with a high round neckline, and a dark knee-length skirt. She stands
+    upright with relaxed shoulders, a neutral expression, and her arms slightly away from her sides,
+    leaving the garment outline unobstructed. A centered front view shows her from the top of her
+    head to below her hips, with her face, shoulders, full sleeves, waist, and the complete top
+    outline clearly visible. A clean, bright studio with a plain pale wall and soft, even lighting.
+    The top hem reaches her hips, and its sleeves reach her wrists. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The top is tight-fitting and
+    body-hugging around her torso and upper arms, with taut fabric held snugly against her body. Its
+    side seams trace her waist contour, and its snug sleeves have a narrow outline that closely
+    follows her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. She has adult head-to-body proportions, an
+    adult-length torso, and adult-length arms and legs. Her long dark brown hair rests behind her
+    shoulders. She wears a plain, opaque, charcoal long-sleeve top with a high round neckline, and a
+    dark knee-length skirt. She stands upright with relaxed shoulders, a neutral expression, and her
+    arms slightly away from her sides, leaving the garment outline unobstructed. A centered front
+    view shows her from the top of her head to below her hips, with her face, shoulders, full
+    sleeves, waist, and the complete top outline clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. The top hem reaches her hips, and its sleeves reach her
+    wrists. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The top has a loose fit with
+    ample space between the fabric and her torso and upper arms. Its side outline hangs well away
+    from her waist, and the sleeves are visibly wider than her arms. She has an average build,
+    medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms. She has
+    adult head-to-body proportions, an adult-length torso, and adult-length arms and legs. Her long
+    dark brown hair rests behind her shoulders. She wears a plain, opaque, charcoal long-sleeve top
+    with a high round neckline, and a dark knee-length skirt. She stands upright with relaxed
+    shoulders, a neutral expression, and her arms slightly away from her sides, leaving the garment
+    outline unobstructed. A centered front view shows her from the top of her head to below her
+    hips, with her face, shoulders, full sleeves, waist, and the complete top outline clearly
+    visible. A clean, bright studio with a plain pale wall and soft, even lighting. The top hem
+    reaches her hips, and its sleeves reach her wrists. She is fully clothed.
+  neutral: *base4
+
+# 5: knee-length dress
+- target: &base5 >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The dress has a regular fit with
+    moderate fabric allowance around her torso and upper arms. Its side outline leaves a small
+    amount of room at the waist, and the sleeves have ordinary width around her arms. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her short dark brown hair is tucked behind her ears. She wears a plain, opaque,
+    charcoal knee-length casual dress with a high round neckline and long sleeves. She stands
+    upright with relaxed shoulders, a neutral expression, and her arms slightly away from her sides,
+    leaving the garment outline unobstructed. A three-quarter view shows her from the top of her
+    head to below her knees, with her face, shoulders, full sleeves, waist, complete dress outline,
+    and hem clearly visible. A clean, bright studio with a plain pale wall and soft, even lighting.
+    The dress hem reaches her knees, and its sleeves reach her wrists. She is fully clothed.
+  positive: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The dress is tight-fitting and
+    body-hugging around her torso and upper arms, with taut fabric held snugly against her body. Its
+    side seams trace her waist contour, and its snug sleeves have a narrow outline that closely
+    follows her arms. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. She has adult head-to-body proportions, an
+    adult-length torso, and adult-length arms and legs. Her short dark brown hair is tucked behind
+    her ears. She wears a plain, opaque, charcoal knee-length casual dress with a high round
+    neckline and long sleeves. She stands upright with relaxed shoulders, a neutral expression, and
+    her arms slightly away from her sides, leaving the garment outline unobstructed. A three-quarter
+    view shows her from the top of her head to below her knees, with her face, shoulders, full
+    sleeves, waist, complete dress outline, and hem clearly visible. A clean, bright studio with a
+    plain pale wall and soft, even lighting. The dress hem reaches her knees, and its sleeves reach
+    her wrists. She is fully clothed.
+  negative: >-
+    A photorealistic color studio photograph with natural skin texture and realistic fabric detail
+    shows exactly one fully clothed adult woman about 35 years old. The dress has a loose fit with
+    ample space between the fabric and her torso and upper arms. Its side outline hangs well away
+    from her waist, and the sleeves are visibly wider than her arms. She has an average build,
+    medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms. She has
+    adult head-to-body proportions, an adult-length torso, and adult-length arms and legs. Her short
+    dark brown hair is tucked behind her ears. She wears a plain, opaque, charcoal knee-length
+    casual dress with a high round neckline and long sleeves. She stands upright with relaxed
+    shoulders, a neutral expression, and her arms slightly away from her sides, leaving the garment
+    outline unobstructed. A three-quarter view shows her from the top of her head to below her
+    knees, with her face, shoulders, full sleeves, waist, complete dress outline, and hem clearly
+    visible. A clean, bright studio with a plain pale wall and soft, even lighting. The dress hem
+    reaches her knees, and its sleeves reach her wrists. She is fully clothed.
+  neutral: *base5
+
+# 6: knee-length skirt; lower garment only
+- target: &base6 >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The skirt has a regular fit with moderate fabric allowance around her hips and upper
+    thighs. Its side outline leaves a small amount of room around her lower body. She has an average
+    build, medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms.
+    She has adult head-to-body proportions, an adult-length torso, and adult-length arms and legs.
+    Her shoulder-length black hair rests behind her shoulders. She wears a plain opaque ivory
+    regular-fit blouse tucked into a charcoal jersey skirt, and flat black shoes. The skirt
+    waistband sits at her natural waist and its hem reaches her knees. The blouse sleeves reach her
+    wrists. She stands upright with relaxed shoulders, a neutral expression, her arms slightly away
+    from her sides, and her feet a small distance apart. A centered front view shows her entire
+    figure from head to toe, with her waist, hips, complete skirt outline, hem, and both feet
+    visible. A clean, bright studio with a plain pale wall and soft, even lighting reveals natural
+    skin texture and realistic fabric detail.
+  positive: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The skirt is tight-fitting and body-hugging around her hips and upper thighs, with
+    taut fabric held snugly against her body. Its narrow outer outline traces her hip and
+    upper-thigh contours as one continuous skirt silhouette. She has an average build, medium-width
+    shoulders, a defined waist, medium-width hips, and moderately slender arms. She has adult
+    head-to-body proportions, an adult-length torso, and adult-length arms and legs. Her
+    shoulder-length black hair rests behind her shoulders. She wears a plain opaque ivory
+    regular-fit blouse tucked into a charcoal jersey skirt, and flat black shoes. The skirt
+    waistband sits at her natural waist and its hem reaches her knees. The blouse sleeves reach her
+    wrists. She stands upright with relaxed shoulders, a neutral expression, her arms slightly away
+    from her sides, and her feet a small distance apart. A centered front view shows her entire
+    figure from head to toe, with her waist, hips, complete skirt outline, hem, and both feet
+    visible. A clean, bright studio with a plain pale wall and soft, even lighting reveals natural
+    skin texture and realistic fabric detail.
+  negative: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The skirt has a loose fit with ample fabric allowance around her hips and upper
+    thighs. Its wide outer outline hangs well away from her hips and upper thighs. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her shoulder-length black hair rests behind her shoulders. She wears a plain
+    opaque ivory regular-fit blouse tucked into a charcoal jersey skirt, and flat black shoes. The
+    skirt waistband sits at her natural waist and its hem reaches her knees. The blouse sleeves
+    reach her wrists. She stands upright with relaxed shoulders, a neutral expression, her arms
+    slightly away from her sides, and her feet a small distance apart. A centered front view shows
+    her entire figure from head to toe, with her waist, hips, complete skirt outline, hem, and both
+    feet visible. A clean, bright studio with a plain pale wall and soft, even lighting reveals
+    natural skin texture and realistic fabric detail.
+  neutral: *base6
+
+# 7: calf-length skirt; lower garment only
+- target: &base7 >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The skirt has a regular fit with moderate fabric allowance around her hips and upper
+    thighs. Its side outline leaves a small amount of room around her lower body. She has an average
+    build, medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms.
+    She has adult head-to-body proportions, an adult-length torso, and adult-length arms and legs.
+    Her dark brown hair is tied in a low ponytail. She wears a plain opaque pale blue regular-fit
+    blouse tucked into a burgundy fine-knit skirt, and flat brown shoes. The skirt waistband sits at
+    her natural waist and its hem reaches the middle of her calves. The blouse sleeves reach her
+    wrists. She stands upright with relaxed shoulders, a neutral expression, her arms slightly away
+    from her sides, and her feet a small distance apart. A three-quarter view shows her entire
+    figure from head to toe, with her waist, hips, complete skirt outline, hem, and both feet
+    visible. A clean, bright studio with a plain pale wall and soft, even lighting reveals natural
+    skin texture and realistic fabric detail.
+  positive: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The skirt is tight-fitting and body-hugging around her hips and upper thighs, with
+    taut fabric held snugly against her body. Its narrow outer outline traces her hip and
+    upper-thigh contours as one continuous skirt silhouette. She has an average build, medium-width
+    shoulders, a defined waist, medium-width hips, and moderately slender arms. She has adult
+    head-to-body proportions, an adult-length torso, and adult-length arms and legs. Her dark brown
+    hair is tied in a low ponytail. She wears a plain opaque pale blue regular-fit blouse tucked
+    into a burgundy fine-knit skirt, and flat brown shoes. The skirt waistband sits at her natural
+    waist and its hem reaches the middle of her calves. The blouse sleeves reach her wrists. She
+    stands upright with relaxed shoulders, a neutral expression, her arms slightly away from her
+    sides, and her feet a small distance apart. A three-quarter view shows her entire figure from
+    head to toe, with her waist, hips, complete skirt outline, hem, and both feet visible. A clean,
+    bright studio with a plain pale wall and soft, even lighting reveals natural skin texture and
+    realistic fabric detail.
+  negative: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The skirt has a loose fit with ample fabric allowance around her hips and upper
+    thighs. Its wide outer outline hangs well away from her hips and upper thighs. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her dark brown hair is tied in a low ponytail. She wears a plain opaque pale blue
+    regular-fit blouse tucked into a burgundy fine-knit skirt, and flat brown shoes. The skirt
+    waistband sits at her natural waist and its hem reaches the middle of her calves. The blouse
+    sleeves reach her wrists. She stands upright with relaxed shoulders, a neutral expression, her
+    arms slightly away from her sides, and her feet a small distance apart. A three-quarter view
+    shows her entire figure from head to toe, with her waist, hips, complete skirt outline, hem, and
+    both feet visible. A clean, bright studio with a plain pale wall and soft, even lighting reveals
+    natural skin texture and realistic fabric detail.
+  neutral: *base7
+
+# 8: ankle-length trousers; lower garment only
+- target: &base8 >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The trousers have a regular fit with moderate fabric allowance around her hips,
+    thighs, and calves. Each trouser leg leaves a small amount of room around her leg. She has an
+    average build, medium-width shoulders, a defined waist, medium-width hips, and moderately
+    slender arms. She has adult head-to-body proportions, an adult-length torso, and adult-length
+    arms and legs. Her shoulder-length chestnut hair is tucked behind her ears. She wears a plain
+    opaque cream regular-fit long-sleeve top tucked into charcoal stretch-cotton trousers, and flat
+    dark shoes. The trouser waistband sits at her natural waist and the cuffs reach her ankles. The
+    top sleeves reach her wrists. She stands upright with relaxed shoulders, a neutral expression,
+    her arms slightly away from her sides, and her feet a small distance apart. A centered front
+    view shows her entire figure from head to toe, with her waist, hips, both trouser legs, cuffs,
+    and both feet visible. A clean, bright studio with a plain pale wall and soft, even lighting
+    reveals natural skin texture and realistic fabric detail.
+  positive: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The trousers are tight-fitting and snug around her hips, thighs, and calves, with
+    taut fabric held close against her body. Each narrow trouser leg closely traces the contour of
+    her leg. She has an average build, medium-width shoulders, a defined waist, medium-width hips,
+    and moderately slender arms. She has adult head-to-body proportions, an adult-length torso, and
+    adult-length arms and legs. Her shoulder-length chestnut hair is tucked behind her ears. She
+    wears a plain opaque cream regular-fit long-sleeve top tucked into charcoal stretch-cotton
+    trousers, and flat dark shoes. The trouser waistband sits at her natural waist and the cuffs
+    reach her ankles. The top sleeves reach her wrists. She stands upright with relaxed shoulders, a
+    neutral expression, her arms slightly away from her sides, and her feet a small distance apart.
+    A centered front view shows her entire figure from head to toe, with her waist, hips, both
+    trouser legs, cuffs, and both feet visible. A clean, bright studio with a plain pale wall and
+    soft, even lighting reveals natural skin texture and realistic fabric detail.
+  negative: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The trousers have a loose fit with ample fabric allowance around her hips, thighs,
+    and calves. Each wide trouser leg hangs well away from her leg. She has an average build,
+    medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms. She has
+    adult head-to-body proportions, an adult-length torso, and adult-length arms and legs. Her
+    shoulder-length chestnut hair is tucked behind her ears. She wears a plain opaque cream
+    regular-fit long-sleeve top tucked into charcoal stretch-cotton trousers, and flat dark shoes.
+    The trouser waistband sits at her natural waist and the cuffs reach her ankles. The top sleeves
+    reach her wrists. She stands upright with relaxed shoulders, a neutral expression, her arms
+    slightly away from her sides, and her feet a small distance apart. A centered front view shows
+    her entire figure from head to toe, with her waist, hips, both trouser legs, cuffs, and both
+    feet visible. A clean, bright studio with a plain pale wall and soft, even lighting reveals
+    natural skin texture and realistic fabric detail.
+  neutral: *base8
+
+# 9: ankle-length jeans; lower garment only
+- target: &base9 >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The jeans have a regular fit with moderate fabric allowance around her hips, thighs,
+    and calves. Each jean leg leaves a small amount of room around her leg. She has an average
+    build, medium-width shoulders, a defined waist, medium-width hips, and moderately slender arms.
+    She has adult head-to-body proportions, an adult-length torso, and adult-length arms and legs.
+    Her short curly black hair leaves her shoulders visible. She wears a plain opaque gray
+    regular-fit sweater tucked into dark blue stretch-denim jeans, and flat black shoes. The jeans
+    waistband sits at her natural waist and the cuffs reach her ankles. The sweater sleeves reach
+    her wrists. She stands upright with relaxed shoulders, a neutral expression, her arms slightly
+    away from her sides, and her feet a small distance apart. A three-quarter view shows her entire
+    figure from head to toe, with her waist, hips, both jean legs, cuffs, and both feet visible. A
+    clean, bright studio with a plain pale wall and soft, even lighting reveals natural skin texture
+    and realistic fabric detail.
+  positive: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The jeans are tight-fitting and snug around her hips, thighs, and calves, with taut
+    denim held close against her body. Each narrow jean leg closely traces the contour of her leg.
+    She has an average build, medium-width shoulders, a defined waist, medium-width hips, and
+    moderately slender arms. She has adult head-to-body proportions, an adult-length torso, and
+    adult-length arms and legs. Her short curly black hair leaves her shoulders visible. She wears a
+    plain opaque gray regular-fit sweater tucked into dark blue stretch-denim jeans, and flat black
+    shoes. The jeans waistband sits at her natural waist and the cuffs reach her ankles. The sweater
+    sleeves reach her wrists. She stands upright with relaxed shoulders, a neutral expression, her
+    arms slightly away from her sides, and her feet a small distance apart. A three-quarter view
+    shows her entire figure from head to toe, with her waist, hips, both jean legs, cuffs, and both
+    feet visible. A clean, bright studio with a plain pale wall and soft, even lighting reveals
+    natural skin texture and realistic fabric detail.
+  negative: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The jeans have a loose fit with ample fabric allowance around her hips, thighs, and
+    calves. Each wide jean leg hangs well away from her leg. She has an average build, medium-width
+    shoulders, a defined waist, medium-width hips, and moderately slender arms. She has adult
+    head-to-body proportions, an adult-length torso, and adult-length arms and legs. Her short curly
+    black hair leaves her shoulders visible. She wears a plain opaque gray regular-fit sweater
+    tucked into dark blue stretch-denim jeans, and flat black shoes. The jeans waistband sits at her
+    natural waist and the cuffs reach her ankles. The sweater sleeves reach her wrists. She stands
+    upright with relaxed shoulders, a neutral expression, her arms slightly away from her sides, and
+    her feet a small distance apart. A three-quarter view shows her entire figure from head to toe,
+    with her waist, hips, both jean legs, cuffs, and both feet visible. A clean, bright studio with
+    a plain pale wall and soft, even lighting reveals natural skin texture and realistic fabric
+    detail.
+  neutral: *base9
+
+# 10: blouse and skirt; both garments
+- target: &base10 >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The blouse and skirt have a regular fit with moderate fabric allowance around her
+    torso, upper arms, hips, and upper thighs. The sleeves and skirt outline leave a small amount of
+    room around her body. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. She has adult head-to-body proportions, an
+    adult-length torso, and adult-length arms and legs. Her shoulder-length dark brown hair rests
+    behind her shoulders. She wears a plain opaque olive-green long-sleeve blouse tucked into a navy
+    jersey skirt, and flat black shoes. The blouse sleeves reach her wrists. The skirt waistband
+    sits at her natural waist and its hem reaches her knees. She stands upright with relaxed
+    shoulders, a neutral expression, her arms slightly away from her sides, and her feet a small
+    distance apart. A centered front view shows her entire figure from head to toe, with both
+    sleeves, waist, hips, complete skirt outline, hem, and both feet visible. A clean, bright studio
+    with a plain pale wall and soft, even lighting reveals natural skin texture and realistic fabric
+    detail.
+  positive: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The blouse is tight-fitting around her torso and upper arms, and the skirt is
+    body-hugging around her hips and upper thighs, with taut fabric held snugly against her body.
+    The snug sleeves trace her arms, while the skirt follows her hip and upper-thigh contours as one
+    continuous skirt silhouette. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. She has adult head-to-body proportions, an
+    adult-length torso, and adult-length arms and legs. Her shoulder-length dark brown hair rests
+    behind her shoulders. She wears a plain opaque olive-green long-sleeve blouse tucked into a navy
+    jersey skirt, and flat black shoes. The blouse sleeves reach her wrists. The skirt waistband
+    sits at her natural waist and its hem reaches her knees. She stands upright with relaxed
+    shoulders, a neutral expression, her arms slightly away from her sides, and her feet a small
+    distance apart. A centered front view shows her entire figure from head to toe, with both
+    sleeves, waist, hips, complete skirt outline, hem, and both feet visible. A clean, bright studio
+    with a plain pale wall and soft, even lighting reveals natural skin texture and realistic fabric
+    detail.
+  negative: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The blouse and skirt have a loose fit with ample fabric allowance around her torso,
+    upper arms, hips, and upper thighs. The wide sleeves and skirt outline hang well away from her
+    body. She has an average build, medium-width shoulders, a defined waist, medium-width hips, and
+    moderately slender arms. She has adult head-to-body proportions, an adult-length torso, and
+    adult-length arms and legs. Her shoulder-length dark brown hair rests behind her shoulders. She
+    wears a plain opaque olive-green long-sleeve blouse tucked into a navy jersey skirt, and flat
+    black shoes. The blouse sleeves reach her wrists. The skirt waistband sits at her natural waist
+    and its hem reaches her knees. She stands upright with relaxed shoulders, a neutral expression,
+    her arms slightly away from her sides, and her feet a small distance apart. A centered front
+    view shows her entire figure from head to toe, with both sleeves, waist, hips, complete skirt
+    outline, hem, and both feet visible. A clean, bright studio with a plain pale wall and soft,
+    even lighting reveals natural skin texture and realistic fabric detail.
+  neutral: *base10
+
+# 11: sweater and trousers; both garments
+- target: &base11 >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The sweater and trousers have a regular fit with moderate fabric allowance around her
+    torso, upper arms, hips, thighs, and calves. The sleeves and trouser legs leave a small amount
+    of room around her body. She has an average build, medium-width shoulders, a defined waist,
+    medium-width hips, and moderately slender arms. She has adult head-to-body proportions, an
+    adult-length torso, and adult-length arms and legs. Her long black hair is tied in a low
+    ponytail. She wears a plain opaque burgundy fine-knit sweater tucked into dark gray
+    stretch-cotton trousers, and flat brown shoes. The sweater sleeves reach her wrists. The trouser
+    waistband sits at her natural waist and the cuffs reach her ankles. She stands upright with
+    relaxed shoulders, a neutral expression, her arms slightly away from her sides, and her feet a
+    small distance apart. A three-quarter view shows her entire figure from head to toe, with both
+    sleeves, waist, hips, both trouser legs, cuffs, and both feet visible. A clean, bright studio
+    with a plain pale wall and soft, even lighting reveals natural skin texture and realistic fabric
+    detail.
+  positive: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The sweater is tight-fitting around her torso and upper arms, and the trousers are
+    snug around her hips, thighs, and calves, with taut fabric held close against her body. The
+    narrow sleeves and each separate trouser leg closely trace the contours of her arms and legs.
+    She has an average build, medium-width shoulders, a defined waist, medium-width hips, and
+    moderately slender arms. She has adult head-to-body proportions, an adult-length torso, and
+    adult-length arms and legs. Her long black hair is tied in a low ponytail. She wears a plain
+    opaque burgundy fine-knit sweater tucked into dark gray stretch-cotton trousers, and flat brown
+    shoes. The sweater sleeves reach her wrists. The trouser waistband sits at her natural waist and
+    the cuffs reach her ankles. She stands upright with relaxed shoulders, a neutral expression, her
+    arms slightly away from her sides, and her feet a small distance apart. A three-quarter view
+    shows her entire figure from head to toe, with both sleeves, waist, hips, both trouser legs,
+    cuffs, and both feet visible. A clean, bright studio with a plain pale wall and soft, even
+    lighting reveals natural skin texture and realistic fabric detail.
+  negative: >-
+    A photorealistic color studio photograph shows exactly one fully clothed adult woman about 35
+    years old. The sweater and trousers have a loose fit with ample fabric allowance around her
+    torso, upper arms, hips, thighs, and calves. The wide sleeves and trouser legs hang well away
+    from her body. She has an average build, medium-width shoulders, a defined waist, medium-width
+    hips, and moderately slender arms. She has adult head-to-body proportions, an adult-length
+    torso, and adult-length arms and legs. Her long black hair is tied in a low ponytail. She wears
+    a plain opaque burgundy fine-knit sweater tucked into dark gray stretch-cotton trousers, and
+    flat brown shoes. The sweater sleeves reach her wrists. The trouser waistband sits at her
+    natural waist and the cuffs reach her ankles. She stands upright with relaxed shoulders, a
+    neutral expression, her arms slightly away from her sides, and her feet a small distance apart.
+    A three-quarter view shows her entire figure from head to toe, with both sleeves, waist, hips,
+    both trouser legs, cuffs, and both feet visible. A clean, bright studio with a plain pale wall
+    and soft, even lighting reveals natural skin texture and realistic fabric detail.
+  neutral: *base11
